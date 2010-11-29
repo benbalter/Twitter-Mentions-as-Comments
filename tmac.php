@@ -3,9 +3,10 @@
 Plugin Name: Twitter Mentions as Comments
 Plugin URI: http://ben.balter.com/2010/11/29/twitter-mentions-as-comments/
 Description: Uses the BackTweet API to look for tweets about your posts. 
-Author: Benjamin J. Balter
 Version: 0.1
+Author: Benjamin J. Balter
 Author URI: http://ben.balter.com
+Licesnse: GPL2
 */
 
 /**
