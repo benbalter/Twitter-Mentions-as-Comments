@@ -39,7 +39,7 @@ It should be noted that neither I nor the plugin are in any way affiliated with 
 
 = Wouldn't it be great if..., I keep getting this error message, etc. =
 
-It probably would be. Please let me know on the [Twitter Mentions as Comments Plugin Page](http://ben.balter.com/2010/11/29/twitter-mentions-as-comments/).
+It probably would be. Please let me know on the [Twitter Mentions as Comments Plugin Page](http://ben.balter.com/2010/11/29/twitter-mentions-as-comments/). 
 
 == Changelog ==
 
