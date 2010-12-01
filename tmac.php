@@ -68,6 +68,10 @@ function tmac_insert_metions( $postID ) {
 	//Get array of mentions
 	$mentions = tmac_get_mentions( $postID );
 	
+	//catch errors
+	if ( !is_array( $mentions ) ) 
+		return;
+	
 	//Init our variable so when can update the post meta
 	$last_id = 0;
 	
