@@ -2,8 +2,8 @@
 /*
 Plugin Name: Twitter Mentions as Comments
 Plugin URI: http://ben.balter.com/2010/11/29/twitter-mentions-as-comments/
-Description: Uses the BackTweet API to look for tweets about your posts. 
-Version: 0.1-Beta
+Description: Queries the Twitter API on a regular basis for tweets about your posts. 
+Version: 0.2-Beta
 Author: Benjamin J. Balter
 Author URI: http://ben.balter.com
 License: GPL2
@@ -12,32 +12,25 @@ License: GPL2
 /**
  * Load API Key and other options
  * @since .1a
- * @todo make an options panel
  */
 function tmac_get_options() {
+
+	//get stored options
 	$options = get_option('tmac_options');
+	
+	//hard code these as options for now so we can make them settings in future versions
+	$options['api_call_limit'] = '150';
+	
+	//return options
 	return $options;
 }
 
 /**
- * Appends BackTweet API Key to URLs
- * @params string url URL to add params to
- * @returns string URL with key appended
- * @since .1a
- */
-function tmac_add_credentials($url) {
-
-	$options = tmac_get_options();
-	$url .= '&key='. $options['api_key'];
-	return $url;
-
-}
-
-/**
- * Calls the BackTweets API and gets mentions for a given post
+ * Calls the Twitter API and gets mentions for a given post
  * @parama int postID ID of current post
  * @returns array array of tweets mentioning current page
  * @since .1a
+ * @todo multiple calls for multiple pages of results (e.g., > 100)
  */
 function tmac_get_mentions( $postID ) {
 
@@ -45,20 +38,19 @@ function tmac_get_mentions( $postID ) {
 	$lastID = get_post_meta( $postID, 'tmac_last_id', true );
 	
 	//Build URL
-	$url = 'http://backtweets.com/search.json?since_id=' . $lastID . '&q=' . urlencode( get_permalink( $postID ) );
-	
-	//Add credentials
-	$url = tmac_add_credentials( $url );
+	$url = 'http://search.twitter.com/search.json?rpp=100&since_id=' . $lastID . '&q=' . urlencode( get_permalink( $postID ) );
 	
 	//make the API call and pass it back
 	$data = json_decode( wp_remote_retrieve_body( wp_remote_get( $url ) ) );
-	return $data->tweets;	
+
+	return $data;	
 }
 
 /**
  * Inserts mentions into the comments table, queues and checks for spam as necessary
  * @params int postID ID of post to check for comments
  * @since .1a
+ * @returns int number of tweets found
  */
 function tmac_insert_metions( $postID ) {
 	
@@ -68,80 +60,95 @@ function tmac_insert_metions( $postID ) {
 	//Get array of mentions
 	$mentions = tmac_get_mentions( $postID );
 	
-	//catch errors
-	if ( !is_array( $mentions ) ) 
-		return;
-	
-	//Init our variable so when can update the post meta
-	$last_id = 0;
-	
-	//don't sanitize e-mail addresses
-	remove_filter('pre_comment_author_email', 'sanitize_email');
-	
+	//if there are no tweets, update post meta to speed up subsequent calls and return
+	if ( sizeof( $mentions->results ) == 0) {
+		update_post_meta($postID, 'tmac_last_id', $mentions->max_id );
+		return 0;
+	}
+		
 	//loop through mentions
-	foreach ($mentions as $tweet) {
+	foreach ($mentions->results as $tweet) {
 	
-		//store the first ID as the most recent ID checked so we can start their next time
-		if ($last_id == 0)
-			$last_id = $tweet->tweet_id;
-
 		//If they exclude RTs, look for "RT" and skip if needed
 		if (!$options['RTs']) {
-			if (strpos($tweet->tweet_text,'RT') != FALSE) 
+			if (strpos($tweet->text,'RT') != FALSE) 
 				continue;
 		}
 		
-		//query twitter API for user details
-		$twitterAPI = tmac_query_twitter(  $tweet->tweet_from_user );
-
+		//Format the author's name based on cache or call API if necessary
+		$author = tmac_build_author_name( $tweet->from_user );
+			
 		//prepare comment array
 		$commentdata = array(
 			'comment_post_ID' => $postID, 
-			'comment_author' => $twitterAPI->name . ' (@' . $tweet->tweet_from_user . ')', 
-			'comment_author_email' => '@' . $tweet->tweet_from_user, 
-			'comment_author_url' => 'http://twitter.com/' . $tweet->tweet_from_user . '/status/' . $tweet->tweet_id,
-			'comment_content' => $tweet->tweet_text,
-			'comment_date_gmt' => $tweet->tweet_created_at,
-			'comment_type' => ''
+			'comment_author' => $author,
+			'comment_author_email' => $tweet->from_user . '@twitter.com', 
+			'comment_author_url' => 'http://twitter.com/' . $tweet->from_user . '/status/' . $tweet->id,
+			'comment_content' => $tweet->text,
+			'comment_date_gmt' => date('Y-m-d H:i:s', strtotime($tweet->created_at) ),
+			'comment_type' => $options['comment_type']
 			);
-		
+			
 		//insert comment using our modified function
 		$comment_id = tmac_new_comment( $commentdata );
 		
-		//Cache the image URL using our previous twitter API call
-		$image = $twitterAPI->profile_image_url;
-		add_comment_meta($comment_id, 'tmac_image', $image, true);
+		//Cache the user's profile image
+		add_comment_meta($comment_id, 'tmac_image', $tweet->profile_image_url, true);
+	
 	}
 	
 	//If we found a mention, update the last_Id post meta
-	if ($last_id != 0)
-		update_post_meta($postID, 'tmac_last_id', (int) $last_id );
+	update_post_meta($postID, 'tmac_last_id', $mentions->max_id );
 
-
-	//add the e-mail filter back
-	add_filter('pre_comment_author_email', 'sanitize_email');
-
+	//return number of mentions found
+	return sizeof( $mentions->results );
 }
 
 /**
  * Function to run on cron to check for mentions
  * @since .1a
+ * @returns int number of mentions found
+ * @todo break query into multiple queries so recent posts are checked more frequently
  */
 function tmac_mentions_check(){
 	
-	//Get most recent 40 posts to stay within limit (24 hours * 40 posts <= 1000 API calls @ 1 call / post) 
-	$posts = get_posts('numberposts=40');
+	$mentions = 0;
+	
+	//get limit	
+	$options = tmac_get_options();
+	
+	//Get all posts
+	$posts = get_posts('numberposts=' . $options['posts_per_check'] );
 	
 	//Loop through each post and check for new mentions
 	foreach ($posts as $post) {
-		tmac_insert_metions( $post->ID );
+		$mentions += tmac_insert_metions( $post->ID );
 	}
+
+	return $mentions;
+}
+
+/**
+ * Resets internal API counter every hour
+ *
+ * User API is limited to 150 unauthenticated calls / hour
+ * Authenticated API is limited to 350 / hour
+ * Search calls do not count toward total, although search has an unpublished limit
+ *
+ * @since .2
+ * @todo query the API for our actual limit
+ */
+function tmac_reset_api_counter() {
+
+	global $tmac_api_counter;
+	$tmac_api_counter = 0;
 
 }
 
 //Register Cron on activation
 register_activation_hook(__FILE__, 'tmac_activation');
 add_action('tmac_hourly_check', 'tmac_mentions_check');
+add_action('tmac_hourly_check', 'tmac_reset_api_counter');
 
 /**
  * Callback to call hourly to check for new mentions
@@ -149,6 +156,18 @@ add_action('tmac_hourly_check', 'tmac_mentions_check');
  */
 function tmac_activation() {
 	wp_schedule_event(time(), 'hourly', 'tmac_hourly_check');
+	
+	$options = get_option('tmac_options');
+	
+	//If the comment_type option is not set (upgrade), set it
+	if ( empty( $options['comment_type'] ) )
+		$options['comment_type'] = '';
+
+	if ( empty( $options['posts_per_check'] ) )
+		$options['posts_per_check'] = '-1';
+		
+	update_option('tmac_options', $options);
+	
 }
 
 //Kill cron on deactivation
@@ -188,7 +207,7 @@ function tmac_new_comment( $commentdata ) {
 	//	BEGIN TMAC MODIFICATIONS (don't use current timestamp but rather twitter timestamp)
 	$commentdata['comment_author_IP'] = '';
 	$commentdata['comment_agent']     = 'Twitter Mentions as Comments';
-	$commentdata['comment_date']     =  get_date_from_gmt($commentdata['comment_date_gmt']);
+	$commentdata['comment_date']     =  get_date_from_gmt( $commentdata['comment_date_gmt'] );
 	//	END TMAC MODIFICATIONS
 	
 	$commentdata = wp_filter_comment($commentdata);
@@ -238,19 +257,86 @@ function tmac_get_profile_image( $twitterID, $comment_id) {
 }
 
 /**
+ * Checks for previous tweet-commments by the author and tries to retrieve their cached real name
+ * @param string $twitterID handle of twitter user
+ * @returns string their real name
+ * @since .2
+ */
+
+function tmac_get_author_name( $twitterID ) {
+	global $wpdb;
+	
+	//Check to see if twitter user has previously commented, if so just grab their name
+	$name = $wpdb->get_var( $wpdb->prepare( "SELECT comment_author FROM $wpdb->comments WHERE comment_author_email = %s and comment_approved = '1' LIMIT 1", $twitterID . '@twitter.com' ) );
+	
+	//if they do not previosly have a comment, or that comment doesn't have a real name, call the Twitter API
+	if ( empty( $name ) | substr($name, 0, 1) == '@' ) {
+	
+		//Query the API
+		$data = tmac_query_twitter( $twitterID );
+		
+		//If we hit the API limit, kick
+		if ( !$data )
+			return false;
+		
+		//Because our query will return the name in the form of REAL NAME (@Handle), split the string at "(@"
+		$name = substr( $data->name, strrpos($data->name, '(@') );
+	}
+	
+	//return the name
+	return $name;
+	
+}
+
+/**
+ * Formats a comment authors name in either the Real Name (@handle) or @handle format depending on information available
+ * @param string $twitterID twitter handle of user
+ * @returns string the formatted name
+ * @since .2
+ */
+function tmac_build_author_name( $twitterID ) {
+	
+	//get the cached real name or query the API
+	$real_name = tmac_get_author_name( $twitterID );
+
+	//If we don't have a real name, just use their twitter handle
+	if ( !$real_name ) 
+		$name = '@' . $twitterID;
+		
+	//if we have their real name, build a pretty name
+	else
+		$name = $real_name . ' (@' . $twitterID . ')';
+	
+	//return the name
+	return $name;
+	
+}
+
+/**
  * Calls the public twitter API and retrieves information on a given user
  * @param string $handle handle of twitter user
  * @returns array assoc. array of info returned
+ * @since .1
  */
 function tmac_query_twitter( $handle ) {
+	global $tmac_api_calls;
+	
+	$options = tmac_get_options();
+	
+	//increment API counter
+	$tmac_api_calls++;
+	
+	//if we are over the limit, kick
+	if ( $tmac_api_calls > $options['api_call_limit'] )
+		return false;
+			
+	//build the URL
+	$url = 'http://api.twitter.com/1/users/show/'. $handle .'.json';
 		
-		//build the URL
-		$url = 'http://api.twitter.com/1/users/show/'. $handle .'.json';
+	//make the call
+	$data = json_decode( wp_remote_retrieve_body( wp_remote_get( $url ) ) );
 		
-		//make the call
-		$data = json_decode( wp_remote_retrieve_body( wp_remote_get( $url ) ) );
-		
-		return $data;
+	return $data;
 		
 }
 
@@ -307,10 +393,15 @@ settings_fields( 'tmac_options' );
 $options = tmac_get_options();
 
 if (isset($_GET['force_refresh']) && $_GET['force_refresh'] == true) {
-	tmac_mentions_check();	
+	$mentions = tmac_mentions_check();	
 ?>
 	<div class="updated fade">
-		<p>Tweets Refreshed!</p>
+		<p>Tweets Refreshed!
+		<?php if ($mentions == 0) { ?>
+			No Tweets found.
+		<?php } else { ?>
+			<a href="edit-comments.php"><strong><?php echo $mentions; ?></strong> Tweet<?php if ($mentions != 1) echo 's'; ?> found</a>.</p>
+		<?php } ?>
 	</div>
 <?php
 }
@@ -318,18 +409,29 @@ if (isset($_GET['force_refresh']) && $_GET['force_refresh'] == true) {
 ?>
 	<table class="form-table">
 		<tr valign="top">
-			<th scope="row"><label for="tmac_options[api_key]">BackTweets API Key</label></th>
-			<td>
-				<input name="tmac_options[api_key]" type="text" id="tmac_options[api_key]" value="<?php echo $options['api_key']; ?>" class="regular-text" /><BR />
-				<span class="description">If you don't have a BackTweets API key, you can get one on the <a href="http://www.backtype.com/signup">BackType Developer Page</a> (free registration required).</span>
-			</td>
-		</tr>
-		<tr valign="top">
 			<th scope="row"><label for="tmac_options[RTs]">Exclude ReTweets?</label></th>
 			<td>
 				<input name="tmac_options[RTs]" type="radio" id="tmac_options[RTs][0]" value="0" <?php if (!$options['RTs']) echo 'checked="checked"'; ?>/> <label for="tmac_options[RTs][0]">Include ReTweets</label><BR />
 				<input name="tmac_options[RTs]" type="radio" id="tmac_options[RTs][1]" value="1" <?php if ($options['RTs']) echo 'checked="checked"'; ?>/> <label for="tmac_options[RTs][1]">Exclude ReTweets</label><BR />
 				<span class="description">If "Exclude ReTweets" is selected, ReTweets (both old- and new-style) will be ignored.</span>
+			</td>
+		</tr>
+		<tr valign="top">
+			<th scope="row"><label for="tmac_options[posts_per_check]">Number of Posts to Check</label></th>
+			<td>
+				Check the <input type="text" name="tmac_options[posts_per_check]" id="tmac_options[posts_per_check]" value="<?php echo $options['posts_per_check']; ?>" size="2"> most recent posts for mentions<br />
+				<span class="description">If set to "-1", will check all posts, if blank will check all posts on your site's front page.</span>
+			</td>
+		</tr>		
+		<tr valign="top">
+			<th scope="row"><label for="tmac_options[comment_type]">Comment Type</label></th>
+			<td>
+				<select name="tmac_options[comment_type]" id="tmac_options[comment_type]">
+					<option value=""<?php if ($options['comment_type'] == '') echo ' SELECTED'; ?>>Comment</option>
+					<option value="trackback"<?php if ($options['comment_type'] == 'trackback') echo ' SELECTED'; ?>>Trackback</option>
+					<option value="pingback"<?php if ($options['comment_type'] == 'pingback') echo ' SELECTED'; ?>>Pingback</option>
+				</select><br />
+				<span class="description">Most users will probably not need to change this setting, although you may prefer that Tweets appear as trackbacks or pingbacks if your theme displays these differently</span>
 			</td>
 		</tr>
 		<tr valign="top">
@@ -348,7 +450,7 @@ if (isset($_GET['force_refresh']) && $_GET['force_refresh'] == true) {
 }
 
 function tmac_options_menu_init() {
-	add_options_page( 'Twitter Mentions as Comments Options', 'Twitter->Comments', 'manage_options', 'tmac_options', 'tmac_options');
+	add_options_page( 'Twitter Mentions as Comments Options', 'Twitter -> Comments', 'manage_options', 'tmac_options', 'tmac_options');
 
 }
 
