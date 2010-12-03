@@ -83,7 +83,7 @@ function tmac_insert_metions( $postID ) {
 			'comment_post_ID' => $postID, 
 			'comment_author' => $author,
 			'comment_author_email' => $tweet->from_user . '@twitter.com', 
-			'comment_author_url' => 'http://twitter.com/' . $tweet->from_user . '/status/' . $tweet->id,
+			'comment_author_url' => 'http://twitter.com/' . $tweet->from_user . '/status/' . $tweet->id_str . '/',
 			'comment_content' => $tweet->text,
 			'comment_date_gmt' => date('Y-m-d H:i:s', strtotime($tweet->created_at) ),
 			'comment_type' => $options['comment_type']
