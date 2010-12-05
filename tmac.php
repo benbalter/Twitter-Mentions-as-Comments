@@ -3,7 +3,7 @@
 Plugin Name: Twitter Mentions as Comments
 Plugin URI: http://ben.balter.com/2010/11/29/twitter-mentions-as-comments/
 Description: Queries the Twitter API on a regular basis for tweets about your posts. 
-Version: 0.2-Beta
+Version: 0.3-Beta
 Author: Benjamin J. Balter
 Author URI: http://ben.balter.com
 License: GPL2
@@ -111,11 +111,15 @@ function tmac_insert_metions( $postID ) {
  * @todo break query into multiple queries so recent posts are checked more frequently
  */
 function tmac_mentions_check(){
-	
+	global $tmac_api_calls;
+
 	$mentions = 0;
 	
 	//get limit	
 	$options = tmac_get_options();
+	
+	//set API call counter
+	$tmac_api_calls = $options['api_call_counter'];
 	
 	//Get all posts
 	$posts = get_posts('numberposts=' . $options['posts_per_check'] );
@@ -124,6 +128,10 @@ function tmac_mentions_check(){
 	foreach ($posts as $post) {
 		$mentions += tmac_insert_metions( $post->ID );
 	}
+
+	//update the stored API counter
+	$options['api_call_counter'] = $tmac_api_calls;
+	update_option( 'tmac_options', $options );
 
 	return $mentions;
 }
@@ -139,16 +147,36 @@ function tmac_mentions_check(){
  * @todo query the API for our actual limit
  */
 function tmac_reset_api_counter() {
+	
+	$options = tmac_get_options();
+	$options['api_call_counter'] = 0;
+	update_option( 'tmac_options', $options);	
+	
+}
 
-	global $tmac_api_counter;
-	$tmac_api_counter = 0;
+/**
+ * Function run hourly via WP cron
+ * @since 0.3-beta
+ */
+function tmac_hourly() {
 
+	//reset API counter
+	tmac_reset_api_counter();
+	
+	//if we are in manual cron mode, kick
+	$options = tmac_get_options();
+	
+	if ( $options['manual_cron'] )
+		return;
+	
+	//if we are in hourly cron mode, check for Tweets
+	tmac_mentions_check();
+	
 }
 
 //Register Cron on activation
 register_activation_hook(__FILE__, 'tmac_activation');
-add_action('tmac_hourly_check', 'tmac_mentions_check');
-add_action('tmac_hourly_check', 'tmac_reset_api_counter');
+add_action('tmac_hourly_check', 'tmac_hourly');
 
 /**
  * Callback to call hourly to check for new mentions
@@ -327,15 +355,34 @@ function tmac_query_twitter( $handle ) {
 	$tmac_api_calls++;
 	
 	//if we are over the limit, kick
-	if ( $tmac_api_calls > $options['api_call_limit'] )
+	if ( $tmac_api_calls > $options['api_call_limit'] ) {
+		
+		//if we already sent an e-mail this go around, don't send again
+		global $tmac_api_limit_msg_sent;
+		if ( $tmac_api_limit_msg_sent ) 
+			return false; 
+		$tmac_api_limit_msg_sent = true;
+		
+		//e-mail the admin to tell them we've hit the API limit
+		wp_mail(	
+					get_settings('admin_email'),
+					'Twitter Mentions as Comments API Limit Reached', 
+					'The WordPress Twitter Mentions as Comments Plugin has reached its API limit. You may want to consider checking less frequently.'
+				);
+		
 		return false;
+	
+	}
 			
 	//build the URL
 	$url = 'http://api.twitter.com/1/users/show/'. $handle .'.json';
 		
 	//make the call
 	$data = json_decode( wp_remote_retrieve_body( wp_remote_get( $url ) ) );
-		
+	
+	//increment counter	
+	$tmac_api_calls++;
+	
 	return $data;
 		
 }
@@ -432,6 +479,22 @@ if (isset($_GET['force_refresh']) && $_GET['force_refresh'] == true) {
 					<option value="pingback"<?php if ($options['comment_type'] == 'pingback') echo ' SELECTED'; ?>>Pingback</option>
 				</select><br />
 				<span class="description">Most users will probably not need to change this setting, although you may prefer that Tweets appear as trackbacks or pingbacks if your theme displays these differently</span>
+			</td>
+		</tr>
+		<tr valign="top">
+			<th scope="row"><label for="tmac_options[manual_cron]">Checking Frequency</label></th>
+			<td>
+				<input name="tmac_options[manual_cron]" type="radio" id="tmac_options[manual_cron][0]" value="0" <?php if (!$options['manual_cron']) echo 'checked="checked"'; ?>/> <label for="tmac_options[manual_cron][0]">Hourly</label><BR />
+				<input name="tmac_options[manual_cron]" type="radio" id="tmac_options[manual_cron][1]" value="1" <?php if ($options['manual_cron']) echo 'checked="checked"'; ?>/> <label for="tmac_options[manual_cron][1]">Manually</label><BR />
+				<span class="description">The plugin can check for Tweets hourly (default), or, if you have the ability to set up a <a href="http://en.wikipedia.org/wiki/Cron">cron job</a>, can check any any desired frequency.</span>
+				<span class="description" id="cron-details">Please set a crontab to execute the file <code><?php echo dirname(__FILE__) . '/cron.php'; ?></code>. The exact command will depend on your server's setup. For example, to run every 15 minute (in most setups) <code>/15 * * * * php <?php echo dirname(__FILE__) . '/cron.php'; ?></code>. Please be aware that Twitter does have some <a href="http://dev.twitter.com/pages/rate-limiting">API limits</a>. The plugin will make one search call per post, and one users/show call for each new user it finds (to get the user's real name).</span>
+			<script>
+				jQuery(document).ready(function($){
+					$('tmac_options[manual_cron][0]').click(function(){$('#cron-details').slideUp()});
+					$('tmac_options[manual_cron][0]').click(function(){$('#cron-details').slideDown()});
+					$('#cron-details').hide();
+				});
+			</script>
 			</td>
 		</tr>
 		<tr valign="top">
