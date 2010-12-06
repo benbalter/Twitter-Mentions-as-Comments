@@ -13,6 +13,7 @@ define('TMAC_DOING_CRON', TRUE);
 if ( !function_exists('tmac_mentions_check') )
 	exit();
 	
-tmac_mentions_check();
-	
+$mentions = tmac_mentions_check();
+
 ?>
+<strong><?php echo $mentions; ?></strong> Tweet<?php if ($mentions != 1) echo 's'; ?> found.
