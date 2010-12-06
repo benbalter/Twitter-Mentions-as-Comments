@@ -88,7 +88,7 @@ function tmac_insert_metions( $postID ) {
 			'comment_date_gmt' => date('Y-m-d H:i:s', strtotime($tweet->created_at) ),
 			'comment_type' => $options['comment_type']
 			);
-			
+					
 		//insert comment using our modified function
 		$comment_id = tmac_new_comment( $commentdata );
 		
@@ -160,6 +160,8 @@ function tmac_reset_api_counter() {
  */
 function tmac_hourly() {
 
+	define ('TMAC_DOING_HOURLY', true);
+	
 	//reset API counter
 	tmac_reset_api_counter();
 	
@@ -440,6 +442,7 @@ settings_fields( 'tmac_options' );
 $options = tmac_get_options();
 
 if (isset($_GET['force_refresh']) && $_GET['force_refresh'] == true) {
+	define ('TMAC_DOING_FORCED_REFRESH', true);
 	$mentions = tmac_mentions_check();	
 ?>
 	<div class="updated fade">
@@ -484,15 +487,23 @@ if (isset($_GET['force_refresh']) && $_GET['force_refresh'] == true) {
 		<tr valign="top">
 			<th scope="row"><label for="tmac_options[manual_cron]">Checking Frequency</label></th>
 			<td>
-				<input name="tmac_options[manual_cron]" type="radio" id="tmac_options[manual_cron][0]" value="0" <?php if (!$options['manual_cron']) echo 'checked="checked"'; ?>/> <label for="tmac_options[manual_cron][0]">Hourly</label><BR />
+				<input name="tmac_options[manual_cron]" type="radio" id="tmac_options[manual_cron][0]" value="0" <?php if ( !$options['manual_cron']) echo 'checked="checked"'; ?>/> <label for="tmac_options[manual_cron][0]">Hourly</label><BR />
 				<input name="tmac_options[manual_cron]" type="radio" id="tmac_options[manual_cron][1]" value="1" <?php if ($options['manual_cron']) echo 'checked="checked"'; ?>/> <label for="tmac_options[manual_cron][1]">Manually</label><BR />
-				<span class="description">The plugin can check for Tweets hourly (default), or, if you have the ability to set up a <a href="http://en.wikipedia.org/wiki/Cron">cron job</a>, can check any any desired frequency.</span>
-				<span class="description" id="cron-details">Please set a crontab to execute the file <code><?php echo dirname(__FILE__) . '/cron.php'; ?></code>. The exact command will depend on your server's setup. For example, to run every 15 minute (in most setups) <code>/15 * * * * php <?php echo dirname(__FILE__) . '/cron.php'; ?></code>. Please be aware that Twitter does have some <a href="http://dev.twitter.com/pages/rate-limiting">API limits</a>. The plugin will make one search call per post, and one users/show call for each new user it finds (to get the user's real name).</span>
+				<span class="description">The plugin can check for Tweets hourly (default), or, if you have the ability to set up a <a href="http://en.wikipedia.org/wiki/Cron">cron job</a>, can check any any desired frequency.</span><BR />
+				<span class="description" id="cron-details"><br />For manual checking, you must set a crontab to execute the file <code><?php echo dirname(__FILE__) . '/cron.php'; ?></code>. The exact command will depend on your server's setup.<br /> To run every 15 minutes, for example (in most setups), the command would be either: <br />
+<code>/15 * * * * /usr/local/bin/php <?php echo dirname(__FILE__) . '/cron.php'; ?></code><br />
+				Please be aware that Twitter does have some <a href="http://dev.twitter.com/pages/rate-limiting">API limits</a>. The plugin will make one search call per post, and one users/show call for each new user it finds (to get the user's real name).</span>
 			<script>
 				jQuery(document).ready(function($){
-					$('tmac_options[manual_cron][0]').click(function(){$('#cron-details').slideUp()});
-					$('tmac_options[manual_cron][0]').click(function(){$('#cron-details').slideDown()});
+					$('#cron-details').siblings('input').click(function(){ 
+						if ( $(this).val() == 1)
+							$('#cron-details').slideDown();
+						else 
+							$('#cron-details').slideUp();
+						});	
+				<?php if ( !$options['manual_cron'] ) { ?>
 					$('#cron-details').hide();
+				<?php } ?>
 				});
 			</script>
 			</td>
@@ -501,7 +512,7 @@ if (isset($_GET['force_refresh']) && $_GET['force_refresh'] == true) {
 			<th scope="row">Force Check</th>
 			<td>
 				<a href="?page=tmac_options&force_refresh=true">Check for New Tweets Now</a><br />
-				<span class="description">Normally the plugin checks for new Tweets every hour. Click the link above to force a check immediately.</span>
+				<span class="description">Normally the plugin checks for new Tweets on its own. Click the link above to force a check immediately.</span>
 			</td>
 		</tr>
 	</table>
