@@ -4,7 +4,7 @@ Donate link: http://ben.balter.com/
 Tags: comments, twitter
 Requires at least: 3.0
 Tested up to: 3.1
-Stable tag: 0.2-Beta
+Stable tag: 0.3-Beta
 
 Twitter Mentions as Comments scours Twitter for people talking about your blog posts & silently inserts their Tweets alongside your existing comments.
 
@@ -45,6 +45,11 @@ You can see it in action on the [WP Resume Plugin page](http://ben.balter.com/20
 It probably would be. Please let me know on the [Twitter Mentions as Comments Plugin Page](http://ben.balter.com/2010/11/29/twitter-mentions-as-comments/). 
 
 == Changelog ==
+
+= 0.3 =
+* Fixed bug where Tweet ID was not being properly stored
+* Added ability to run check manually based on cron job
+* Better API throttling with feedback when limit reached
 
 = 0.2 =
 * Now relies solely on the public Twitter API, no API keys needed
