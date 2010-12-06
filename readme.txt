@@ -6,7 +6,7 @@ Requires at least: 3.0
 Tested up to: 3.1
 Stable tag: 0.3-Beta
 
-Twitter Mentions as Comments scours Twitter for people talking about your blog posts & silently inserts their Tweets alongside your existing comments.
+Twitter Mentions as Comments scours Twitter for people talking about your site & silently inserts their Tweets alongside your existing comments.
 
 == Description ==
 
