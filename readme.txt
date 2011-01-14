@@ -44,6 +44,10 @@ You can see it in action on the [WP Resume Plugin page](http://ben.balter.com/20
 
 It probably would be. Please let me know on the [Twitter Mentions as Comments Plugin Page](http://ben.balter.com/2010/11/29/twitter-mentions-as-comments/). 
 
+= It keeps finding my own Tweets. Is there an easy way to blacklist a Twitter user? =
+
+Yes. Because Tweets go through WordPress’s built-in comment moderation system, if you navigate to Settings -> Discussions and add “[your Twitter username]@twitter.com” to the blacklist, your Tweets should not appear (or anyone else’s you want for that matter).
+
 == Changelog ==
 
 = 0.3 =
