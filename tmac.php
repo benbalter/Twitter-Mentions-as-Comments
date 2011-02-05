@@ -33,13 +33,15 @@ function tmac_get_options() {
  * @todo multiple calls for multiple pages of results (e.g., > 100)
  */
 function tmac_get_mentions( $postID ) {
-
+	
 	//Retrive last ID checked for on this post so we don't re-add a comment already added
 	$lastID = get_post_meta( $postID, 'tmac_last_id', true );
 	
 	//Build URL
-	$url = 'http://search.twitter.com/search.json?rpp=100&since_id=' . $lastID . '&q=' . urlencode( get_permalink( $postID ) );
+	$url = 'http://search.twitter.com/search.json?rpp=100&since_id=' . $lastID . '&q=' . urlencode( get_permalink( $postID ) );	
 	
+	echo "$url \r\n";
+
 	//make the API call and pass it back
 	$data = json_decode( wp_remote_retrieve_body( wp_remote_get( $url ) ) );
 
@@ -70,7 +72,7 @@ function tmac_insert_metions( $postID ) {
 	foreach ($mentions->results as $tweet) {
 	
 		//If they exclude RTs, look for "RT" and skip if needed
-		if (!$options['RTs']) {
+		if (!isset($options['RTs']) || !$options['RTs']) {
 			if (strpos($tweet->text,'RT') != FALSE) 
 				continue;
 		}
@@ -88,7 +90,7 @@ function tmac_insert_metions( $postID ) {
 			'comment_date_gmt' => date('Y-m-d H:i:s', strtotime($tweet->created_at) ),
 			'comment_type' => $options['comment_type']
 			);
-					
+			
 		//insert comment using our modified function
 		$comment_id = tmac_new_comment( $commentdata );
 		
@@ -112,14 +114,13 @@ function tmac_insert_metions( $postID ) {
  */
 function tmac_mentions_check(){
 	global $tmac_api_calls;
-
 	$mentions = 0;
-	
+		
 	//get limit	
 	$options = tmac_get_options();
 	
 	//set API call counter
-	$tmac_api_calls = $options['api_call_counter'];
+	$tmac_api_calls = ( isset($options['api_call_counter'] ) ) ? $options['api_call_counter'] : 0;
 	
 	//Get all posts
 	$posts = get_posts('numberposts=' . $options['posts_per_check'] );
@@ -396,7 +397,7 @@ function tmac_query_twitter( $handle ) {
  * @since .1a
  */
 function tmac_filter_avatar( $avatar, $data) {
-
+	
 	//If this is a real comment (not a tweet), kick
 	if ($data->comment_agent != 'Twitter Mentions as Comments')
 		return $avatar;
@@ -461,8 +462,8 @@ if (isset($_GET['force_refresh']) && $_GET['force_refresh'] == true) {
 		<tr valign="top">
 			<th scope="row"><label for="tmac_options[RTs]">Exclude ReTweets?</label></th>
 			<td>
-				<input name="tmac_options[RTs]" type="radio" id="tmac_options[RTs][0]" value="0" <?php if (!$options['RTs']) echo 'checked="checked"'; ?>/> <label for="tmac_options[RTs][0]">Include ReTweets</label><BR />
-				<input name="tmac_options[RTs]" type="radio" id="tmac_options[RTs][1]" value="1" <?php if ($options['RTs']) echo 'checked="checked"'; ?>/> <label for="tmac_options[RTs][1]">Exclude ReTweets</label><BR />
+				<input name="tmac_options[RTs]" type="radio" id="tmac_options[RTs][0]" value="0" <?php if (!isset($options['RTs']) || !$options['RTs']) echo 'checked="checked"'; ?>/> <label for="tmac_options[RTs][0]">Include ReTweets</label><BR />
+				<input name="tmac_options[RTs]" type="radio" id="tmac_options[RTs][1]" value="1" <?php if (isset($options['RTs']) && $options['RTs']) echo 'checked="checked"'; ?>/> <label for="tmac_options[RTs][1]">Exclude ReTweets</label><BR />
 				<span class="description">If "Exclude ReTweets" is selected, ReTweets (both old- and new-style) will be ignored.</span>
 			</td>
 		</tr>
@@ -487,12 +488,10 @@ if (isset($_GET['force_refresh']) && $_GET['force_refresh'] == true) {
 		<tr valign="top">
 			<th scope="row"><label for="tmac_options[manual_cron]">Checking Frequency</label></th>
 			<td>
-				<input name="tmac_options[manual_cron]" type="radio" id="tmac_options[manual_cron][0]" value="0" <?php if ( !$options['manual_cron']) echo 'checked="checked"'; ?>/> <label for="tmac_options[manual_cron][0]">Hourly</label><BR />
-				<input name="tmac_options[manual_cron]" type="radio" id="tmac_options[manual_cron][1]" value="1" <?php if ($options['manual_cron']) echo 'checked="checked"'; ?>/> <label for="tmac_options[manual_cron][1]">Manually</label><BR />
+				<input name="tmac_options[manual_cron]" type="radio" id="tmac_options[manual_cron][0]" value="0" <?php if ( !isset($options['manual_cron']) || !$options['manual_cron']) echo 'checked="checked"'; ?>/> <label for="tmac_options[manual_cron][0]">Hourly</label><BR />
+				<input name="tmac_options[manual_cron]" type="radio" id="tmac_options[manual_cron][1]" value="1" <?php if (isset($options['manual_cron']) && $options['manual_cron']) echo 'checked="checked"'; ?>/> <label for="tmac_options[manual_cron][1]">Manually</label><BR />
 				<span class="description">The plugin can check for Tweets hourly (default), or, if you have the ability to set up a <a href="http://en.wikipedia.org/wiki/Cron">cron job</a>, can check any any desired frequency.</span><BR />
-				<span class="description" id="cron-details"><br />For manual checking, you must set a crontab to execute the file <code><?php echo dirname(__FILE__) . '/cron.php'; ?></code>. The exact command will depend on your server's setup.<br /> To run every 15 minutes, for example (in most setups), the command would be either: <br />
-<code>/15 * * * * /usr/local/bin/php <?php echo dirname(__FILE__) . '/cron.php'; ?></code><br />
-				Please be aware that Twitter does have some <a href="http://dev.twitter.com/pages/rate-limiting">API limits</a>. The plugin will make one search call per post, and one users/show call for each new user it finds (to get the user's real name).</span>
+				<span class="description" id="cron-details"><br />For manual checking, you must set a crontab to execute the file <code><?php echo dirname(__FILE__) . '/cron.php'; ?></code>. The exact command will depend on your server's setup.<br /> To run every 15 minutes, for example (in most setups), the command would be: <br /><code>/15 * * * * php <?php echo dirname(__FILE__) . '/cron.php'; ?></code><br /> Please be aware that Twitter does have some <a href="http://dev.twitter.com/pages/rate-limiting">API limits</a>. The plugin will make one search call per post, and one users/show call for each new user it finds (to get the user's real name).</span>
 			<script>
 				jQuery(document).ready(function($){
 					$('#cron-details').siblings('input').click(function(){ 
