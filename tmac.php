@@ -40,8 +40,6 @@ function tmac_get_mentions( $postID ) {
 	//Build URL
 	$url = 'http://search.twitter.com/search.json?rpp=100&since_id=' . $lastID . '&q=' . urlencode( get_permalink( $postID ) );	
 	
-	echo "$url \r\n";
-
 	//make the API call and pass it back
 	$data = json_decode( wp_remote_retrieve_body( wp_remote_get( $url ) ) );
 
