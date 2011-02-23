@@ -37,8 +37,8 @@ function tmac_get_mentions( $postID ) {
 	//Retrive last ID checked for on this post so we don't re-add a comment already added
 	$lastID = get_post_meta( $postID, 'tmac_last_id', true );
 	
-	//Build URL
-	$url = 'http://search.twitter.com/search.json?rpp=100&since_id=' . $lastID . '&q=' . urlencode( get_permalink( $postID ) );	
+	//Build URL, verify that $lastID is a string and not scientific notation, see http://jetlogs.org/2008/02/05/php-problems-with-big-integers-and-scientific-notation/
+	$url = 'http://search.twitter.com/search.json?rpp=100&since_id=' . number_format($lastID, 0, '.', '') . '&q=' . urlencode( get_permalink( $postID ) );	
 	
 	//make the API call and pass it back
 	$data = json_decode( wp_remote_retrieve_body( wp_remote_get( $url ) ) );
