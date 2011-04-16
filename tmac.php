@@ -3,7 +3,7 @@
 Plugin Name: Twitter Mentions as Comments
 Plugin URI: http://ben.balter.com/2010/11/29/twitter-mentions-as-comments/
 Description: Queries the Twitter API on a regular basis for tweets about your posts. 
-Version: 0.3-Beta
+Version: 0.4
 Author: Benjamin J. Balter
 Author URI: http://ben.balter.com
 License: GPL2
@@ -33,18 +33,59 @@ function tmac_get_options() {
  * @todo multiple calls for multiple pages of results (e.g., > 100)
  */
 function tmac_get_mentions( $postID ) {
+	global $debug_info;
 	
 	//Retrive last ID checked for on this post so we don't re-add a comment already added
-	$lastID = get_post_meta( $postID, 'tmac_last_id', true );
+	$lastID = tmac_get_lastID( $postID );
 	
 	//Build URL, verify that $lastID is a string and not scientific notation, see http://jetlogs.org/2008/02/05/php-problems-with-big-integers-and-scientific-notation/
-	$url = 'http://search.twitter.com/search.json?rpp=100&since_id=' . number_format($lastID, 0, '.', '') . '&q=' . urlencode( get_permalink( $postID ) );	
+	$url = 'http://search.twitter.com/search.json?rpp=100&since_id=' . $lastID . '&q=' . urlencode( get_permalink( $postID ) );	
 	
 	//make the API call and pass it back
-	$data = json_decode( wp_remote_retrieve_body( wp_remote_get( $url ) ) );
+	$data = json_decode( $response = wp_remote_retrieve_body( wp_remote_get( $url ) ) );
+
+	if (TMAC_DEBUG)
+		$debug_info['posts'][$postID] = array('lastID'=>$lastID, 'url'=>$url, 'data'=>$data);
 
 	return $data;	
 }
+
+/**
+ * Retrieves the ID of the last tweet checked for a given post
+ * If the lastID meta field is empty, it checks for comments (backwards compatability) and then defaults to 0
+ * @since 0.4
+ * @param int $postID ID of post
+ * @returns int ID of last tweet
+ */
+function tmac_get_lastID( $postID ) {
+	
+	//Check for an ID stored in meta, if so, return
+	$lastID = get_post_meta( $postID, 'tmac_last_id', true );
+	
+	if ($lastID)
+		return $lastID;
+		
+	//grab all the comments for the post	
+	$comments = get_comments( array( 'post_id' => $postID ) );
+	$lastID = 0;
+	
+	//loop through the comments
+	foreach ($comments as $comment) {
+	
+		//if this isn't a TMAC comment, tkip
+		if ( $comment->comment_agent != 'Twitter Mentions as Comments')
+			continue;
+		
+		//parse the ID from the author URL
+		$lastID = substr($comment->comment_author_url, strrpos($comment->comment_author_url, '/', -2 ) + 1, -1 );
+		
+		//we're done looking (comments are in reverse cron order)
+		break;
+	}
+	
+	return $lastID;
+
+} 
 
 /**
  * Inserts mentions into the comments table, queues and checks for spam as necessary
@@ -53,16 +94,17 @@ function tmac_get_mentions( $postID ) {
  * @returns int number of tweets found
  */
 function tmac_insert_metions( $postID ) {
+	global $debug_info;
 	
 	//get options
 	$options = tmac_get_options();
 	
 	//Get array of mentions
 	$mentions = tmac_get_mentions( $postID );
-	
+
 	//if there are no tweets, update post meta to speed up subsequent calls and return
 	if ( sizeof( $mentions->results ) == 0) {
-		update_post_meta($postID, 'tmac_last_id', $mentions->max_id );
+		update_post_meta($postID, 'tmac_last_id', $mentions->max_id_str  );
 		return 0;
 	}
 		
@@ -71,7 +113,7 @@ function tmac_insert_metions( $postID ) {
 	
 		//If they exclude RTs, look for "RT" and skip if needed
 		if (!isset($options['RTs']) || !$options['RTs']) {
-			if (strpos($tweet->text,'RT') != FALSE) 
+			if ( substr( $tweet->text, 0, 2 ) == 'RT' ) 
 				continue;
 		}
 		
@@ -88,7 +130,10 @@ function tmac_insert_metions( $postID ) {
 			'comment_date_gmt' => date('Y-m-d H:i:s', strtotime($tweet->created_at) ),
 			'comment_type' => $options['comment_type']
 			);
-			
+		
+		if (TMAC_DEBUG)
+			$debug_info['posts'][$postID]['commentdata'] = $commentdata;
+		
 		//insert comment using our modified function
 		$comment_id = tmac_new_comment( $commentdata );
 		
@@ -98,7 +143,7 @@ function tmac_insert_metions( $postID ) {
 	}
 	
 	//If we found a mention, update the last_Id post meta
-	update_post_meta($postID, 'tmac_last_id', $mentions->max_id );
+	update_post_meta($postID, 'tmac_last_id', $mentions->max_id_str );
 
 	//return number of mentions found
 	return sizeof( $mentions->results );
@@ -112,13 +157,24 @@ function tmac_insert_metions( $postID ) {
  */
 function tmac_mentions_check(){
 	global $tmac_api_calls;
+	global $debug_info;
+	
+	if (!defined('TMAC_DEBUG'))
+		define ('TMAC_DEBUG', false);
+	
 	$mentions = 0;
 		
 	//get limit	
 	$options = tmac_get_options();
 	
+	if (TMAC_DEBUG)
+		$debug_info['options'] = $options;
+		 		
 	//set API call counter
 	$tmac_api_calls = ( isset($options['api_call_counter'] ) ) ? $options['api_call_counter'] : 0;
+	
+	if (TMAC_DEBUG)
+		$debug_info['api_calls'] = $tmac_api_calls;
 	
 	//Get all posts
 	$posts = get_posts('numberposts=' . $options['posts_per_check'] );
@@ -221,6 +277,8 @@ function tmac_deactivation() {
  * @since .1a
  */
 function tmac_new_comment( $commentdata ) {
+	global $debug_info;
+
 	$commentdata = apply_filters('preprocess_comment', $commentdata);
 
 	$commentdata['comment_post_ID'] = (int) $commentdata['comment_post_ID'];
@@ -244,8 +302,20 @@ function tmac_new_comment( $commentdata ) {
 	$commentdata['comment_approved'] = wp_allow_comment($commentdata);
 
 	$comment_ID = wp_insert_comment($commentdata);
+	
+	if ( tmac_dupe_check( $commentdata ) ) {
+		
+		if (TMAC_DEBUG)
+			$debug_info[] = array('event' => 'failed dupe check', 'data' => $commentdata);
+
+		return false;
+	}
+		
 
 	do_action('comment_post', $comment_ID, $commentdata['comment_approved']);
+
+		if (TMAC_DEBUG)
+			$debug_info[] = array('event' => 'comment added', 'data' => $commentdata);
 
 	if ( 'spam' !== $commentdata['comment_approved'] ) { // If it's spam save it silently for later crunching
 		if ( '0' == $commentdata['comment_approved'] )
@@ -258,6 +328,26 @@ function tmac_new_comment( $commentdata ) {
 	}
 
 	return $comment_ID;
+}
+
+/**
+ * Stopgap measure to prevent duplicate comment error
+ * @param array $commentdata commentdata
+ * @since 0.4
+ */
+function tmac_dupe_check( $commentdata ) {
+	global $wpdb;
+	extract($commentdata, EXTR_SKIP);
+
+	// Simple duplicate check
+	// expected_slashed ($comment_post_ID, $comment_author, $comment_author_email, $comment_content)
+	$dupe = "SELECT comment_ID FROM $wpdb->comments WHERE comment_post_ID = '$comment_post_ID' AND comment_approved != 'trash' AND ( comment_author = '$comment_author' ";
+	if ( $comment_author_email )
+		$dupe .= "OR comment_author_email = '$comment_author_email' ";
+	$dupe .= ") AND comment_content = '$comment_content' LIMIT 1";
+	
+	return $wpdb->get_var($dupe);
+
 }
 
 /**
@@ -425,6 +515,7 @@ add_action( 'admin_init', 'tmac_options_int' );
  * @since .1a
  */
 function tmac_options() { 	
+global $debug_info;
 ?>
 <div class="wrap">
 	<h2>Twitter Mentions as Comments Options</h2>
@@ -442,6 +533,10 @@ $options = tmac_get_options();
 
 if (isset($_GET['force_refresh']) && $_GET['force_refresh'] == true) {
 	define ('TMAC_DOING_FORCED_REFRESH', true);
+	
+	if (isset($_GET['debug']) && $_GET['debug'] == true)
+		define ('TMAC_DEBUG', true);
+	
 	$mentions = tmac_mentions_check();	
 ?>
 	<div class="updated fade">
@@ -454,8 +549,12 @@ if (isset($_GET['force_refresh']) && $_GET['force_refresh'] == true) {
 	</div>
 <?php
 }
-
-?>
+if (defined('TMAC_DEBUG') && TMAC_DEBUG) {?>
+<strong>Debug Info</strong><br />
+<textarea cols="100" rows="20"><?php print_r($debug_info); ?></textarea><br />
+<em>In the box above is some technical information about how WordPress is fetching Tweets. <br />
+If you are experiencing trouble, simply copy the above into a text file and send it to <a href="mailto:ben@balter.com">Ben@Balter.com</a>.</em>
+<?php } ?>
 	<table class="form-table">
 		<tr valign="top">
 			<th scope="row"><label for="tmac_options[RTs]">Exclude ReTweets?</label></th>
@@ -508,7 +607,7 @@ if (isset($_GET['force_refresh']) && $_GET['force_refresh'] == true) {
 		<tr valign="top">
 			<th scope="row">Force Check</th>
 			<td>
-				<a href="?page=tmac_options&force_refresh=true">Check for New Tweets Now</a><br />
+				<a href="?page=tmac_options&force_refresh=true<?php if (isset($_GET['debug'])) echo '&debug=' . $_GET['debug']; ?>">Check for New Tweets Now</a><br />
 				<span class="description">Normally the plugin checks for new Tweets on its own. Click the link above to force a check immediately.</span>
 			</td>
 		</tr>
@@ -526,4 +625,23 @@ function tmac_options_menu_init() {
 }
 
 add_action('admin_menu','tmac_options_menu_init');
+
+function tmac_duplicate_comment_debug_intercept($data) {
+	global $debug_info;
+	
+	$debug_info['error_info'] = $data;
+	
+	?>
+	
+	<strong>Something went wrong.</strong><br />
+	WordPress says we are trying to add a duplicate comment. Here's some debug info:<br />
+<textarea cols="100" rows="20"><?php print_r($debug_info); ?></textarea><br />
+<em>In the box above is some technical information about how WordPress is fetching Tweets. <br />
+If you are experiencing trouble, simply copy the above into a text file and send it to <a href="mailto:ben@balter.com">Ben@Balter.com</a>.</em>
+<?php 
+
+}
+
+add_action( 'comment_duplicate_trigger', 'tmac_duplicate_comment_debug_intercept' );
+
 ?>
