@@ -308,7 +308,6 @@ function tmac_new_comment( $commentdata ) {
 		if (TMAC_DEBUG)
 			$debug_info[] = array('event' => 'failed dupe check', 'data' => $commentdata);
 
-		return false;
 	}
 		
 
