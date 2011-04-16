@@ -30,8 +30,7 @@ Twitter Mentions as Comments does exactly what it promises to do - scours Twitte
 
 You can see it in action on the [WP Resume Plugin page](http://ben.balter.com/2010/09/12/wordpress-resume-plugin/#comment-168).
 
-**Please note that this is an initial release** and is not intended for use in all environments. It works for me, but that's about all I can guarantee right now. Any feedback you can provide in the comments section of the [Twitter Mentions as Comments Plugin Page](http://ben.balter.com/2010/11/29/twitter-mentions-as-comments/). 
- to improve the plugin is greatly appreciated.
+**Questions? Comments? Feature Requests?** Any feedback you can provide in the comments section of the [Twitter Mentions as Comments Plugin Page](http://ben.balter.com/2010/11/29/twitter-mentions-as-comments/) to improve the plugin is greatly appreciated.
 
 == Installation ==
 
