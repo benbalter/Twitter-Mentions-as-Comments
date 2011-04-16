@@ -3,7 +3,7 @@
 Plugin Name: Twitter Mentions as Comments
 Plugin URI: http://ben.balter.com/2010/11/29/twitter-mentions-as-comments/
 Description: Queries the Twitter API on a regular basis for tweets about your posts. 
-Version: 0.4
+Version: 0.4.1
 Author: Benjamin J. Balter
 Author URI: http://ben.balter.com
 License: GPL2
@@ -61,8 +61,9 @@ function tmac_get_lastID( $postID ) {
 	
 	//Check for an ID stored in meta, if so, return
 	$lastID = get_post_meta( $postID, 'tmac_last_id', true );
-	
-	if ($lastID)
+
+	//if we have an ID, return, but check for bad pre-1.6.3 data	
+	if ($lastID && !is_float( $lastID ) )
 		return $lastID;
 		
 	//grab all the comments for the post	
