@@ -4,7 +4,7 @@ Donate link: http://ben.balter.com/
 Tags: comments, twitter
 Requires at least: 3.0
 Tested up to: 3.2
-Stable tag: 0.4
+Stable tag: 0.4.2
 
 Twitter Mentions as Comments scours Twitter for people talking about your site & silently inserts their Tweets alongside your existing comments.
 
@@ -48,6 +48,12 @@ It probably would be. Please let me know on the [Twitter Mentions as Comments Pl
 Yes. Because Tweets go through WordPress’s built-in comment moderation system, if you navigate to Settings -> Discussions and add “[your Twitter username]@twitter.com” to the blacklist, your Tweets should not appear (or anyone else’s you want for that matter).
 
 == Changelog ==
+
+= 0.4.2 =
+* Added support to check ?p=### formats for some shortened URLs
+
+= 0.4.1 =
+* Fixed bug where update check would fail if plugin had been upgraded from pre-0.4 version
 
 = 0.4 =
 * Fixed duplicate comment bug
