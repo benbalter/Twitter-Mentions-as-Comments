@@ -39,7 +39,7 @@ function tmac_get_mentions( $postID ) {
 	$lastID = tmac_get_lastID( $postID );
 	
 	//Build URL, verify that $lastID is a string and not scientific notation, see http://jetlogs.org/2008/02/05/php-problems-with-big-integers-and-scientific-notation/
-	$url = 'http://search.twitter.com/search.json?rpp=100&since_id=' . $lastID . '&q=' . urlencode( get_permalink( $postID ) );	
+	$url = 'http://search.twitter.com/search.json?rpp=100&since_id=' . $lastID . '&q=' . urlencode( get_permalink( $postID ) ) . '%20OR%20' . urlencode( get_bloginfo( 'wpurl' ) . '/?p=' . $postID );	
 	
 	//make the API call and pass it back
 	$data = json_decode( $response = wp_remote_retrieve_body( wp_remote_get( $url ) ) );
@@ -552,8 +552,7 @@ if (isset($_GET['force_refresh']) && $_GET['force_refresh'] == true) {
 if (defined('TMAC_DEBUG') && TMAC_DEBUG) {?>
 <strong>Debug Info</strong><br />
 <textarea cols="100" rows="20"><?php print_r($debug_info); ?></textarea><br />
-<em>In the box above is some technical information about how WordPress is fetching Tweets. <br />
-If you are experiencing trouble, simply copy the above into a text file and send it to <a href="mailto:ben@balter.com">Ben@Balter.com</a>.</em>
+<em>In the box above is some technical information about how WordPress is fetching Tweets. <br />.</em>
 <?php } ?>
 	<table class="form-table">
 		<tr valign="top">

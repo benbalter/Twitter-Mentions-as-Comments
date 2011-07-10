@@ -3,7 +3,7 @@ Contributors: benbalter
 Donate link: http://ben.balter.com/
 Tags: comments, twitter
 Requires at least: 3.0
-Tested up to: 3.1
+Tested up to: 3.2
 Stable tag: 0.4
 
 Twitter Mentions as Comments scours Twitter for people talking about your site & silently inserts their Tweets alongside your existing comments.
