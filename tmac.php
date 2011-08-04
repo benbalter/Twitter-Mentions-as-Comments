@@ -3,7 +3,7 @@
 Plugin Name: Twitter Mentions as Comments
 Plugin URI: http://ben.balter.com/2010/11/29/twitter-mentions-as-comments/
 Description: Queries the Twitter API on a regular basis for tweets about your posts. 
-Version: 0.4.2
+Version: 0.4.3
 Author: Benjamin J. Balter
 Author URI: http://ben.balter.com
 License: GPL2
@@ -624,23 +624,5 @@ function tmac_options_menu_init() {
 }
 
 add_action('admin_menu','tmac_options_menu_init');
-
-function tmac_duplicate_comment_debug_intercept($data) {
-	global $debug_info;
-	
-	$debug_info['error_info'] = $data;
-	
-	?>
-	
-	<strong>Something went wrong.</strong><br />
-	WordPress says we are trying to add a duplicate comment. Here's some debug info:<br />
-<textarea cols="100" rows="20"><?php print_r($debug_info); ?></textarea><br />
-<em>In the box above is some technical information about how WordPress is fetching Tweets. <br />
-If you are experiencing trouble, simply copy the above into a text file and send it to <a href="mailto:ben@balter.com">Ben@Balter.com</a>.</em>
-<?php 
-
-}
-
-add_action( 'comment_duplicate_trigger', 'tmac_duplicate_comment_debug_intercept' );
 
 ?>
