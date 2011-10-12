@@ -32,6 +32,8 @@ You can see it in action on the [WP Resume Plugin page](http://ben.balter.com/20
 
 **Questions? Comments? Feature Requests?** Any feedback you can provide in the comments section of the [Twitter Mentions as Comments Plugin Page](http://ben.balter.com/2010/11/29/twitter-mentions-as-comments/) to improve the plugin is greatly appreciated.
 
+*Enjoy using Twitter Mentions as Comments? Feel free to [make a small donation](http://ben.balter.com/donate/) to support the software’s continued development.*
+
 == Installation ==
 
 1. Download and install the plugin
