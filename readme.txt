@@ -51,6 +51,11 @@ Yes. Because Tweets go through WordPress’s built-in comment moderation system, i
 
 == Changelog ==
 
+= 1.0 =
+* Codebase completely re-written from the ground up
+* Debug information removed
+* Added hideable donate button to the options page
+
 = 0.4.3 =
 * Fixed bug where TMAC debug info would appear on ALL duplicate comment errors
 
