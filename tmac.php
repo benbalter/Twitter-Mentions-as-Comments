@@ -596,7 +596,7 @@ if (defined('TMAC_DEBUG') && TMAC_DEBUG) {?>
 						else 
 							$('#cron-details').slideUp();
 						});	
-				<?php if ( !$options['manual_cron'] ) { ?>
+				<?php if ( !isset( $options['manual_cron'] ) || !$options['manual_cron'] ) { ?>
 					$('#cron-details').hide();
 				<?php } ?>
 				});
