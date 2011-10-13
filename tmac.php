@@ -487,7 +487,7 @@ function tmac_query_twitter( $handle ) {
 function tmac_filter_avatar( $avatar, $data) {
 	
 	//If this is a real comment (not a tweet), kick
-	if ($data->comment_agent != 'Twitter Mentions as Comments')
+	if ( !isset( $data->comment_agent ) || $data->comment_agent != 'Twitter Mentions as Comments')
 		return $avatar;
 
 	//get the url of the image
