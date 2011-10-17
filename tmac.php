@@ -13,7 +13,13 @@ class TMAC {
 
 	static $instance;
 	public $version = '1.0';
+	public $api_call_limit = '150';
+	public $ttl = 3600;
 
+	/**
+	 * Registers hooks and filters
+	 * @since 1.0
+	 */
 	function __construct() {
 	
 		self::$instance = &$this;
@@ -25,26 +31,45 @@ class TMAC {
 		//Kill cron on deactivation
 		register_deactivation_hook(__FILE__, array( &$this, 'deactivation' ) );
 		
+		//api limit filter
+		add_filter( 'tmac_options', array( &$this, 'api_call_limit_filter'), 10, 1 );
+		
+		//float bug fix
+		add_filter( 'tmac_lastID', array( &$this, 'lastID_float_fix'), 10, 2 );
+		
+		//avatars
 		add_filter( 'get_avatar', array( &$this, 'filter_avatar' ), 10, 2  );
+		
+		//admin menus
 		add_action( 'admin_init', array( &$this, 'options_int' ) );
 		add_action( 'admin_menu', array( &$this, 'options_menu_init' ) );
-
+		add_action( 'wp_ajax_tmac_hide_donate', array(&$this, 'hide_donate') );
+		add_action( 'admin_head', array( &$this, 'enqueue_scripts' ) );
 	}
 
 	/**
-	 * Load API Key and other options
+	 * Load TMAC options
 	 * @since .1a
 	 */
 	function get_options() {
 	
-		//get stored options
-		$options = get_option('tmac_options');
-		
-		//hard code these as options for now so we can make them settings in future versions
-		$options['api_call_limit'] = '150';
-		
-		//return options
+		return apply_filters( 'tmac_options', get_option('tmac_options') );
+	
+	}
+
+	/**
+	 * Filter to apply call limit to options
+	 * Hard coded as option for now so we can make them settings in future versions
+	 * @param array $options the options
+	 * @returns array the modified options
+	 * @since 1.0
+	 */	
+	function api_call_limit_filter( $options ) {
+
+		$options['api_call_limit'] = $this->api_call_limit;
+			
 		return $options;
+		
 	}
 	
 	/**
@@ -55,7 +80,6 @@ class TMAC {
 	 * @todo multiple calls for multiple pages of results (e.g., > 100)
 	 */
 	function get_mentions( $postID ) {
-		global $debug_info;
 		
 		//Retrive last ID checked for on this post so we don't re-add a comment already added
 		$lastID = $this->get_lastID( $postID );
@@ -63,10 +87,12 @@ class TMAC {
 		//Build URL, verify that $lastID is a string and not scientific notation, see http://jetlogs.org/2008/02/05/php-problems-with-big-integers-and-scientific-notation/
 		$url = 'http://search.twitter.com/search.json?rpp=100&since_id=' . $lastID . '&q=' . urlencode( get_permalink( $postID ) ) . '%20OR%20' . urlencode( get_bloginfo( 'wpurl' ) . '/?p=' . $postID );	
 		
+		$url = apply_filters( 'tmac_query_url', $url, $postID );
+		
 		//make the API call and pass it back
 		$data = json_decode( $response = wp_remote_retrieve_body( wp_remote_get( $url ) ) );
-	
-		return $data;	
+			
+		return apply_filters( 'tmac_query_response', $data, $postID );;	
 	}
 	
 	/**
@@ -80,9 +106,22 @@ class TMAC {
 		
 		//Check for an ID stored in meta, if so, return
 		$lastID = get_post_meta( $postID, 'tmac_last_id', true );
+		
+		return apply_filters( 'tmac_lastID', $lastID, $postID );
 	
+	} 
+	
+	/**
+	 * Fix for bug pre 1.6.3 where lastID's were stored as float-strings in scientific notation rather than integers
+	 * @param string $lastID the lastID as a string in scientific notation
+	 * @param int $postID the post we're checking
+	 * @returns int the ID of the last tweet checked
+	 * @since 1.0
+	 */
+	function lastID_float_fix( $lastID, $postID ) {
+		
 		//if we have an ID, return, but check for bad pre-1.6.3 data	
-		if ($lastID && !is_float( $lastID ) )
+		if ( $lastID && !is_float( $lastID ) ) 
 			return $lastID;
 			
 		//grab all the comments for the post	
@@ -102,10 +141,9 @@ class TMAC {
 			//we're done looking (comments are in reverse cron order)
 			break;
 		}
-		
+			
 		return $lastID;
-	
-	} 
+	}
 	
 	/**
 	 * Inserts mentions into the comments table, queues and checks for spam as necessary
@@ -114,7 +152,6 @@ class TMAC {
 	 * @returns int number of tweets found
 	 */
 	function insert_metions( $postID ) {
-		global $debug_info;
 		
 		//get options
 		$options = $this->get_options();
@@ -123,13 +160,13 @@ class TMAC {
 		$mentions = $this->get_mentions( $postID );
 	
 		//if there are no tweets, update post meta to speed up subsequent calls and return
-		if ( sizeof( $mentions->results ) == 0) {
-			update_post_meta($postID, 'tmac_last_id', $mentions->max_id_str  );
+		if ( empty( $mentions->results ) ) {
+			update_post_meta( $postID, 'tmac_last_id', $mentions->max_id_str );
 			return 0;
 		}
 			
 		//loop through mentions
-		foreach ($mentions->results as $tweet) {
+		foreach ( $mentions->results as $tweet ) {
 		
 			//If they exclude RTs, look for "RT" and skip if needed
 			if (!isset($options['RTs']) || !$options['RTs']) {
@@ -150,12 +187,15 @@ class TMAC {
 				'comment_date_gmt' => date('Y-m-d H:i:s', strtotime($tweet->created_at) ),
 				'comment_type' => $options['comment_type']
 				);
-
+		
 			//insert comment using our modified function
+			$commentdata = apply_filters( 'tmac_commentdata', $commentdata );
 			$comment_id = $this->new_comment( $commentdata );
 			
 			//Cache the user's profile image
 			add_comment_meta($comment_id, 'tmac_image', $tweet->profile_image_url, true);
+
+			do_action( 'tmac_insert_mention', $comment_id, $commentdata );
 		
 		}
 		
@@ -174,7 +214,8 @@ class TMAC {
 	 */
 	function mentions_check(){
 		global $tmac_api_calls;
-		global $debug_info;
+		
+		do_action( 'pre_tmac_mentions_check' );
 				
 		$mentions = 0;
 			
@@ -183,18 +224,22 @@ class TMAC {
 				 		
 		//set API call counter
 		$tmac_api_calls = ( isset($options['api_call_counter'] ) ) ? $options['api_call_counter'] : 0;
+		$tmac_api_calls = apply_filters( 'tmac_api_calls', $tmac_api_calls );
 		
 		//Get all posts
 		$posts = get_posts('numberposts=' . $options['posts_per_check'] );
+		$posts = apply_filters( 'tmac_mentions_check_posts', $posts );
 		
 		//Loop through each post and check for new mentions
-		foreach ($posts as $post) {
+		foreach ( $posts as $post ) {
 			$mentions += $this->insert_metions( $post->ID );
 		}
 	
 		//update the stored API counter
 		$options['api_call_counter'] = $tmac_api_calls;
 		update_option( 'tmac_options', $options );
+		
+		do_action( 'tmac_mentions_check' );
 	
 		return $mentions;
 	}
@@ -214,6 +259,7 @@ class TMAC {
 		$options = $this->get_options();
 		$options['api_call_counter'] = 0;
 		update_option( 'tmac_options', $options);	
+		do_action( 'tmac_api_counter_reset' );
 		
 	}
 	
@@ -246,19 +292,40 @@ class TMAC {
 	 */
 	function activation() {
 		
-		wp_schedule_event(time(), 'hourly', array( &$this, 'hourly_check' ) );
+		wp_schedule_event( time(), 'hourly', array( &$this, 'hourly_check' ) );
 		
 		$options = $this->get_options();
+
+		if ( !isset( $options['db_version'] ) || $options['db_version'] < $this->version )
+			$this->upgrade();
+				
+	}
+	
+	/**
+	 * Upgrades options database and sets default options
+	 * @since 1.0
+	 */
+	function upgrade() {
+	
+		$options = $this->get_options();
+		
+		//key => default value
+		$defaults = array( 'comment_type' => '', 'posts_per_check' => '-1', 'hide-donate' => false );
+		$defaults = apply_filters( 'tmac_default_options', $defaults );
 		
 		//If the comment_type option is not set (upgrade), set it
-		if ( empty( $options['comment_type'] ) )
-			$options['comment_type'] = '';
-	
-		if ( empty( $options['posts_per_check'] ) )
-			$options['posts_per_check'] = '-1';
-			
+		foreach ( $defaults as $key => $value ) {
+			if ( !isset( $options[ $key ] ) )
+				$options[ $key ] = $value;
+		}
+		
+		$options['db_version'] = $this->version;
+				
 		update_option('tmac_options', $options);
 		
+		do_action( 'tmac_db_upgrade' );
+
+	
 	}
 	
 	/**
@@ -274,32 +341,30 @@ class TMAC {
 	 *
 	 * (Adaptation of wp_new_comment from /wp-includes/comments.php,
 	 * original function does not allow for overriding timestamp,
-	 * copied from v 3.1 )
+	 * copied from v 3.3 )
 	 *
 	 * @params array $commentdata assoc. array of comment data, same format as wp_insert_comment()
 	 * @since .1a
 	 */
 	function new_comment( $commentdata ) {
-		global $debug_info;
-	
-		//@todo, can this be handled via a filter now??!
 	
 		$commentdata = apply_filters('preprocess_comment', $commentdata);
-	
+		
 		$commentdata['comment_post_ID'] = (int) $commentdata['comment_post_ID'];
 		if ( isset($commentdata['user_ID']) )
 			$commentdata['user_id'] = $commentdata['user_ID'] = (int) $commentdata['user_ID'];
 		elseif ( isset($commentdata['user_id']) )
 			$commentdata['user_id'] = (int) $commentdata['user_id'];
-	
+		
 		$commentdata['comment_parent'] = isset($commentdata['comment_parent']) ? absint($commentdata['comment_parent']) : 0;
 		$parent_status = ( 0 < $commentdata['comment_parent'] ) ? wp_get_comment_status($commentdata['comment_parent']) : '';
 		$commentdata['comment_parent'] = ( 'approved' == $parent_status || 'unapproved' == $parent_status ) ? $commentdata['comment_parent'] : 0;
-	
+		
 		//	BEGIN TMAC MODIFICATIONS (don't use current timestamp but rather twitter timestamp)
 		$commentdata['comment_author_IP'] = '';
 		$commentdata['comment_agent']     = 'Twitter Mentions as Comments';
 		$commentdata['comment_date']     =  get_date_from_gmt( $commentdata['comment_date_gmt'] );
+		$commentdata = apply_filters( 'tmac_comment', $commentdata );
 		//	END TMAC MODIFICATIONS
 		
 		$commentdata = wp_filter_comment($commentdata);
@@ -307,7 +372,7 @@ class TMAC {
 		$commentdata['comment_approved'] = wp_allow_comment($commentdata);
 	
 		$comment_ID = wp_insert_comment($commentdata);
-			
+	
 		do_action('comment_post', $comment_ID, $commentdata['comment_approved']);
 	
 		if ( 'spam' !== $commentdata['comment_approved'] ) { // If it's spam save it silently for later crunching
@@ -317,18 +382,19 @@ class TMAC {
 			$post = &get_post($commentdata['comment_post_ID']); // Don't notify if it's your own comment
 	
 			if ( get_option('comments_notify') && $commentdata['comment_approved'] && ( ! isset( $commentdata['user_id'] ) || $post->post_author != $commentdata['user_id'] ) )
-				wp_notify_postauthor($comment_ID, empty( $commentdata['comment_type'] ) ? $commentdata['comment_type'] : '' );
+				wp_notify_postauthor($comment_ID, isset( $commentdata['comment_type'] ) ? $commentdata['comment_type'] : '' );
 		}
 	
 		return $comment_ID;
 	}
-	
+		
 	/**
 	 * Stopgap measure to prevent duplicate comment error
 	 * @param array $commentdata commentdata
 	 * @since 0.4
 	 */
 	function dupe_check( $commentdata ) {
+	
 		global $wpdb;
 		extract($commentdata, EXTR_SKIP);
 	
@@ -350,7 +416,10 @@ class TMAC {
 	 * @since .1a
 	 * @returns string url of profile image
 	 */
-	function tget_profile_image( $twitterID, $comment_id) {
+	function get_profile_image( $twitterID, $comment_id) {
+	
+		if ( $image = wp_cache_get( $twitterID, 'tmac_profile_images' ) )
+			return $image;
 		
 		//Check to see if we already have the image stored in comment meta
 		$image = get_comment_meta($comment_id, 'tmac_image', true);
@@ -363,7 +432,12 @@ class TMAC {
 			
 			//Cache the image URL
 			add_comment_meta($comment_id, 'tmac_image', $image, true);
+			
 		}
+		
+		$image = apply_filters( 'tmac_user_image', $iamge, $twitterID, $comment_id );
+		
+		wp_cache_set( $twitterID, $image, 'tmac_profile_images', $this->ttl );
 		
 		return $image;
 	}
@@ -374,15 +448,18 @@ class TMAC {
 	 * @returns string their real name
 	 * @since .2
 	 */
-	
 	function get_author_name( $twitterID ) {
+	
 		global $wpdb;
+		
+		if ( $name = wp_cache_get( $twitterID, 'tmac_author_names' ) )
+			return $name;
 		
 		//Check to see if twitter user has previously commented, if so just grab their name
 		$name = $wpdb->get_var( $wpdb->prepare( "SELECT comment_author FROM $wpdb->comments WHERE comment_author_email = %s and comment_approved = '1' LIMIT 1", $twitterID . '@twitter.com' ) );
 		
 		//if they do not previosly have a comment, or that comment doesn't have a real name, call the Twitter API
-		if ( empty( $name ) | substr($name, 0, 1) == '@' ) {
+		if ( empty( $name ) || substr($name, 0, 1) == '@' ) {
 		
 			//Query the API
 			$data = $this->query_twitter( $twitterID );
@@ -393,9 +470,13 @@ class TMAC {
 			
 			//Because our query will return the name in the form of REAL NAME (@Handle), split the string at "(@"
 			$name = substr( $data->name, strrpos($data->name, '(@') );
+		
 		}
 		
-		//return the name
+		$name = apply_filters( 'tmac_author_name', $name, $twitterID );
+		
+		wp_cache_set( $twitterID, $name, 'tmac_author_names', $this->ttl );
+		
 		return $name;
 		
 	}
@@ -433,6 +514,8 @@ class TMAC {
 	function query_twitter( $handle ) {
 		global $tmac_api_calls;
 		
+		do_action( 'pre_tmac_query' );
+		
 		$options = $this->get_options();
 		
 		//increment API counter
@@ -445,14 +528,15 @@ class TMAC {
 			global $tmac_api_limit_msg_sent;
 			if ( $tmac_api_limit_msg_sent ) 
 				return false; 
+				
 			$tmac_api_limit_msg_sent = true;
 			
 			//e-mail the admin to tell them we've hit the API limit
 			wp_mail(	
-						get_settings('admin_email'),
-						'Twitter Mentions as Comments API Limit Reached', 
-						'The WordPress Twitter Mentions as Comments Plugin has reached its API limit. You may want to consider checking less frequently.'
-					);
+				get_settings('admin_email'),
+				'Twitter Mentions as Comments API Limit Reached', 
+				'The WordPress Twitter Mentions as Comments Plugin has reached its API limit. You may want to consider checking less frequently.'
+			);
 			
 			return false;
 		
@@ -461,6 +545,8 @@ class TMAC {
 		//build the URL
 		$url = 'http://api.twitter.com/1/users/show/'. $handle .'.json';
 			
+		apply_filters( 'tmac_query_url', $url, $handle );
+		
 		//make the call
 		$data = json_decode( wp_remote_retrieve_body( wp_remote_get( $url ) ) );
 		
@@ -488,6 +574,7 @@ class TMAC {
 		
 		//replace the twitter image with the default avatar and return
 		return preg_replace("/http:\/\/([^']*)/", $url, $avatar);
+		
 	}
 		
 	/**
@@ -503,11 +590,9 @@ class TMAC {
 	 * Creates the options sub-panel
 	 * @since .1a
 	 */
-	function options() { 	
-	global $debug_info;
-	?>
+	function options() { ?>
 	<div class="wrap">
-		<h2>Twitter Mentions as Comments Options</h2>
+		<h2><?php _e( 'Twitter Mentions as Comments Options', 'twitter-mentions-as-comments' ); ?></h2>
 		<form method="post" action='options.php' id="tmac_form">
 	<?php 
 	
@@ -526,69 +611,56 @@ class TMAC {
 		$mentions = $this->mentions_check();	
 	?>
 		<div class="updated fade">
-			<p>Tweets Refreshed!
+			<p><?php _e( 'Tweets Refreshed!', 'twitter-mentions-as-comments' ); ?>
 			<?php if ($mentions == 0) { ?>
-				No Tweets found.
+				<?php _e( 'No Tweets found.', 'twitter-mentions-as-comments' ); ?>
 			<?php } else { ?>
-				<a href="edit-comments.php"><strong><?php echo $mentions; ?></strong> Tweet<?php if ($mentions != 1) echo 's'; ?> found</a>.</p>
+				<a href="edit-comments.php"><?php printf(_n( "<strong>%d</strong> tweet found.", "<strong>%d</strong> tweets found.", $mentions ), $mentions ); ?></a>.</p>
 			<?php } ?>
 		</div>
 	<?php
 	} ?>
 		<table class="form-table">
 			<tr valign="top">
-				<th scope="row"><label for="tmac_options[RTs]">Exclude ReTweets?</label></th>
+				<th scope="row"><label for="tmac_options[RTs]"><?php _e( 'Exclude ReTweets?', 'twitter-mentions-as-comments' ); ?></label></th>
 				<td>
-					<input name="tmac_options[RTs]" type="radio" id="tmac_options[RTs][0]" value="0" <?php if (!isset($options['RTs']) || !$options['RTs']) echo 'checked="checked"'; ?>/> <label for="tmac_options[RTs][0]">Include ReTweets</label><BR />
-					<input name="tmac_options[RTs]" type="radio" id="tmac_options[RTs][1]" value="1" <?php if (isset($options['RTs']) && $options['RTs']) echo 'checked="checked"'; ?>/> <label for="tmac_options[RTs][1]">Exclude ReTweets</label><BR />
-					<span class="description">If "Exclude ReTweets" is selected, ReTweets (both old- and new-style) will be ignored.</span>
+					<input name="tmac_options[RTs]" type="radio" id="tmac_options[RTs][0]" value="0" <?php if (!isset($options['RTs']) || !$options['RTs']) echo 'checked="checked"'; ?>/> <label for="tmac_options[RTs][0]"><?php _e( 'Include ReTweets', 'twitter-mentions-as-comments' ); ?></label><BR />
+					<input name="tmac_options[RTs]" type="radio" id="tmac_options[RTs][1]" value="1" <?php if (isset($options['RTs']) && $options['RTs']) echo 'checked="checked"'; ?>/> <label for="tmac_options[RTs][1]"><?php _e( 'Exclude ReTweets', 'twitter-mentions-as-comments' ); ?></label><BR />
+					<span class="description"><?php _e( 'If "Exclude ReTweets" is selected, ReTweets (both old- and new-style) will be ignored.', 'twitter-mentions-as-comments' ); ?></span>
 				</td>
 			</tr>
 			<tr valign="top">
-				<th scope="row"><label for="tmac_options[posts_per_check]">Number of Posts to Check</label></th>
+				<th scope="row"><label for="tmac_options[posts_per_check]"><?php _e( 'Number of Posts to Check', 'twitter-mentions-as-comments' ); ?></label></th>
 				<td>
-					Check the <input type="text" name="tmac_options[posts_per_check]" id="tmac_options[posts_per_check]" value="<?php echo $options['posts_per_check']; ?>" size="2"> most recent posts for mentions<br />
-					<span class="description">If set to "-1", will check all posts, if blank will check all posts on your site's front page.</span>
+					Check the <input type="text" name="tmac_options[posts_per_check]" id="tmac_options[posts_per_check]" value="<?php echo $options['posts_per_check']; ?>" size="2"> <?php _e( 'most recent posts for mentions', 'twitter-mentions-as-comments' ); ?><br />
+					<span class="description"><?php _e( 'If set to "-1", will check all posts, if blank will check all posts on your site\'s front page.', 'twitter-mentions-as-comments' ); ?></span>
 				</td>
 			</tr>		
 			<tr valign="top">
-				<th scope="row"><label for="tmac_options[comment_type]">Comment Type</label></th>
+				<th scope="row"><label for="tmac_options[comment_type]"><?php _e( 'Comment Type', 'twitter-mentions-as-comments' ); ?></label></th>
 				<td>
 					<select name="tmac_options[comment_type]" id="tmac_options[comment_type]">
-						<option value=""<?php if ($options['comment_type'] == '') echo ' SELECTED'; ?>>Comment</option>
-						<option value="trackback"<?php if ($options['comment_type'] == 'trackback') echo ' SELECTED'; ?>>Trackback</option>
-						<option value="pingback"<?php if ($options['comment_type'] == 'pingback') echo ' SELECTED'; ?>>Pingback</option>
+						<option value=""<?php if ($options['comment_type'] == '') echo ' SELECTED'; ?>><?php _e( 'Comment', 'twitter-mentions-as-comments' ); ?></option>
+						<option value="trackback"<?php if ($options['comment_type'] == 'trackback') echo ' SELECTED'; ?>><?php _e( 'Trackback', 'twitter-mentions-as-comments' ); ?></option>
+						<option value="pingback"<?php if ($options['comment_type'] == 'pingback') echo ' SELECTED'; ?>><?php _e( 'Pingback', 'twitter-mentions-as-comments' ); ?></option>
 					</select><br />
-					<span class="description">Most users will probably not need to change this setting, although you may prefer that Tweets appear as trackbacks or pingbacks if your theme displays these differently</span>
+					<span class="description"><?php _e( 'Most users will probably not need to change this setting, although you may prefer that Tweets appear as trackbacks or pingbacks if your theme displays these differently', 'twitter-mentions-as-comments' ); ?></span>
 				</td>
 			</tr>
 			<tr valign="top">
-				<th scope="row"><label for="tmac_options[manual_cron]">Checking Frequency</label></th>
+				<th scope="row"><label for="tmac_options[manual_cron]"><?php _e( 'Checking Frequency', 'twitter-mentions-as-comments' ); ?></label></th>
 				<td>
-					<input name="tmac_options[manual_cron]" type="radio" id="tmac_options[manual_cron][0]" value="0" <?php if ( !isset($options['manual_cron']) || !$options['manual_cron']) echo 'checked="checked"'; ?>/> <label for="tmac_options[manual_cron][0]">Hourly</label><BR />
-					<input name="tmac_options[manual_cron]" type="radio" id="tmac_options[manual_cron][1]" value="1" <?php if (isset($options['manual_cron']) && $options['manual_cron']) echo 'checked="checked"'; ?>/> <label for="tmac_options[manual_cron][1]">Manually</label><BR />
-					<span class="description">The plugin can check for Tweets hourly (default), or, if you have the ability to set up a <a href="http://en.wikipedia.org/wiki/Cron">cron job</a>, can check any any desired frequency.</span><BR />
-					<span class="description" id="cron-details"><br />For manual checking, you must set a crontab to execute the file <code><?php echo dirname(__FILE__) . '/cron.php'; ?></code>. The exact command will depend on your server's setup.<br /> To run every 15 minutes, for example (in most setups), the command would be: <br /><code>/15 * * * * php <?php echo dirname(__FILE__) . '/cron.php'; ?></code><br /> Please be aware that Twitter does have some <a href="http://dev.twitter.com/pages/rate-limiting">API limits</a>. The plugin will make one search call per post, and one users/show call for each new user it finds (to get the user's real name).</span>
-				<script>
-					jQuery(document).ready(function($){
-						$('#cron-details').siblings('input').click(function(){ 
-							if ( $(this).val() == 1)
-								$('#cron-details').slideDown();
-							else 
-								$('#cron-details').slideUp();
-							});	
-					<?php if ( !isset( $options['manual_cron'] ) || !$options['manual_cron'] ) { ?>
-						$('#cron-details').hide();
-					<?php } ?>
-					});
-				</script>
+					<input name="tmac_options[manual_cron]" type="radio" id="tmac_options[manual_cron][0]" value="0" <?php if ( !isset($options['manual_cron']) || !$options['manual_cron']) echo 'checked="checked"'; ?>/> <label for="tmac_options[manual_cron][0]"><?php _e( 'Hourly', 'twitter-mentions-as-comments' ); ?></label><BR />
+					<input name="tmac_options[manual_cron]" type="radio" id="tmac_options[manual_cron][1]" value="1" <?php if (isset($options['manual_cron']) && $options['manual_cron']) echo 'checked="checked"'; ?>/> <label for="tmac_options[manual_cron][1]"><?php _e( 'Manually', 'twitter-mentions-as-comments' ); ?></label><BR />
+					<span class="description"><?php _e( 'The plugin can check for Tweets hourly (default), or, if you have the ability to set up a <a href="http://en.wikipedia.org/wiki/Cron">cron job</a>, can check any any desired frequency.', 'twitter-mentions-as-comments' ); ?></span><BR />
+					<span class="description" id="cron-details"><br /><?php echo sprintf( __( 'For manual checking, you must set a crontab to execute the file <code>%s/cron.php</code>. The exact command will depend on your server\'s setup. To run every 15 minutes, for example (in most setups), the command would be: <code>/15 * * * * php %s/cron.php</code> Please be aware that Twitter does have some <a href="http://dev.twitter.com/pages/rate-limiting">API limits</a>. The plugin will make one search call per post, and one users/show call for each new user it finds (to get the user\'s real name).', 'twitter-mentions-as-comments' ), dirname( __FILE__ ), dirname( __FILE__ ) ); ?></span>
 				</td>
 			</tr>
 			<tr valign="top">
 				<th scope="row">Force Check</th>
 				<td>
-					<a href="?page=tmac_options&force_refresh=true<?php if (isset($_GET['debug'])) echo '&debug=' . $_GET['debug']; ?>">Check for New Tweets Now</a><br />
-					<span class="description">Normally the plugin checks for new Tweets on its own. Click the link above to force a check immediately.</span>
+					<a href="?page=tmac_options&force_refresh=true<?php if (isset($_GET['debug'])) echo '&debug=' . $_GET['debug']; ?>"><?php _e( 'Check for New Tweets Now', 'twitter-mentions-as-comments' ); ?></a><br />
+					<span class="description"><?php _e( 'Normally the plugin checks for new Tweets on its own. Click the link above to force a check immediately.', 'twitter-mentions-as-comments' ); ?></span>
 				</td>
 			</tr>
 			<?php if ( !isset( $options['hide-donate'] ) || $options['hide-donate'] != true ) { ?>
@@ -615,6 +687,38 @@ class TMAC {
 		add_options_page( 'Twitter Mentions as Comments Options', 'Twitter -> Comments', 'manage_options', 'tmac_options', array( &$this, 'options') );
 	
 	}
+
+	/**
+	 * Stores user's preference to hide the donate message via AJAX
+	 */
+	function hide_donate() {
+		
+		check_ajax_referer( 'tmac_hide_donate' , '_ajax_nonce-tmac-hide-donate' );
+
+		$current_user_id = get_current_user_id();
+		$options = $this->get_options();
+		$options['hide-donate'] = true;
+		
+		update_option( 'tmac_options', $options);
+		
+		die( 1 );
+		
+	}
+
+	/**
+	 * Enqueues TMAC JS file
+	 * @since 1.0
+	 */
+	function enqueue_scripts() {
+	
+		$options = $this->get_options();
+		$file = ( WP_DEBUG ) ? '/tmac.dev.js' : '/tmac.js';
+		wp_enqueue_script( 'tmac', plugins_url( $file, __FILE__ ), array( 'jquery'), $this->version, true );
+		$data = array();
+		$data['hide_manual_cron_details'] = !( isset( $options['manual_cron'] ) && $options['manual_cron'] );
+		wp_localize_script( 'tmac', 'tmac', $data );
+	
+	} 
 
 }
 

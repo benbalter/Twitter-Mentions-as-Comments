@@ -32,7 +32,7 @@ You can see it in action on the [WP Resume Plugin page](http://ben.balter.com/20
 
 **Questions? Comments? Feature Requests?** Any feedback you can provide in the comments section of the [Twitter Mentions as Comments Plugin Page](http://ben.balter.com/2010/11/29/twitter-mentions-as-comments/) to improve the plugin is greatly appreciated.
 
-*Enjoy using Twitter Mentions as Comments? Feel free to [make a small donation](http://ben.balter.com/donate/) to support the software’s continued development.*
+*Enjoy using Twitter Mentions as Comments? Feel free to [make a small donation](http://ben.balter.com/donate/) to support the software's continued development.*
 
 == Installation ==
 
@@ -47,14 +47,18 @@ It probably would be. Please let me know on the [Twitter Mentions as Comments Pl
  
 = It keeps finding my own Tweets. Is there an easy way to blacklist a Twitter user? =
 
-Yes. Because Tweets go through WordPressÕs built-in comment moderation system, if you navigate to Settings -> Discussions and add Ò[your Twitter username]@twitter.comÓ to the blacklist, your Tweets should not appear (or anyone elseÕs you want for that matter).
+Yes. Because Tweets go through WordPress's built-in comment moderation system, if you navigate to Settings -> Discussions and add "[your Twitter username]@twitter.com" to the blacklist, your Tweets should not appear (or anyone else's you want for that matter).
 
 == Changelog ==
 
 = 1.0 =
 * Codebase completely re-written from the ground up
-* Debug information removed
+* Significant performance improvements by integrating with native WordPress caching class
+* Extensive API hooks added for plugin developers to expand and customize functionality
+* Debug information removed for performance considerations
+* Added support for translations
 * Added hideable donate button to the options page
+* Moved javascript to a standalone file
 
 = 0.4.3 =
 * Fixed bug where TMAC debug info would appear on ALL duplicate comment errors

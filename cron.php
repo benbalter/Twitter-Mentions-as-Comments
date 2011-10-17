@@ -10,10 +10,14 @@ require_once('../../../wp-load.php');
 define('TMAC_DOING_CRON', TRUE);
 
 //verify that the plugin is activated, otherwise exit
-if ( !function_exists('tmac_mentions_check') )
+if ( !class_exists('TMAC') )
 	exit();
+
+global $tmac;
+if ( !$tmac )
+	$tmac = new TMAC();
 	
-$mentions = tmac_mentions_check();
+$mentions = $tmac->mentions_check();
 
 ?>
-<strong><?php echo $mentions; ?></strong> Tweet<?php if ($mentions != 1) echo 's'; ?> found.
+<strong><?php printf( _n( '%n mention found', '%n mentions found', $mentions), $mentions ); ?></strong>
