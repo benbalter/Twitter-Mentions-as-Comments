@@ -15,6 +15,7 @@ class TMAC {
 	public $version = '1.0';
 	public $api_call_limit = '150';
 	public $ttl = 3600;
+	public $ua = 'Twitter Mentions as Comments';
 
 	/**
 	 * Registers hooks and filters
@@ -136,7 +137,7 @@ class TMAC {
 		foreach ($comments as $comment) {
 		
 			//if this isn't a TMAC comment, tkip
-			if ( $comment->comment_agent != 'Twitter Mentions as Comments')
+			if ( $comment->comment_agent != $this->ua )
 				continue;
 			
 			//parse the ID from the author URL
@@ -366,7 +367,7 @@ class TMAC {
 		
 		//	BEGIN TMAC MODIFICATIONS (don't use current timestamp but rather twitter timestamp)
 		$commentdata['comment_author_IP'] = '';
-		$commentdata['comment_agent']     = 'Twitter Mentions as Comments';
+		$commentdata['comment_agent']     = $this->ua;
 		$commentdata['comment_date']     =  get_date_from_gmt( $commentdata['comment_date_gmt'] );
 		$commentdata = apply_filters( 'tmac_comment', $commentdata );
 		//	END TMAC MODIFICATIONS
@@ -439,7 +440,7 @@ class TMAC {
 			
 		}
 		
-		$image = apply_filters( 'tmac_user_image', $iamge, $twitterID, $comment_id );
+		$image = apply_filters( 'tmac_user_image', $image, $twitterID, $comment_id );
 		
 		wp_cache_set( $twitterID, $image, 'tmac_profile_images', $this->ttl );
 		
@@ -570,7 +571,7 @@ class TMAC {
 	function filter_avatar( $avatar, $data) {
 		
 		//If this is a real comment (not a tweet), kick
-		if ( !isset( $data->comment_agent ) || $data->comment_agent != 'Twitter Mentions as Comments')
+		if ( !isset( $data->comment_agent ) || $data->comment_agent != $this->ua )
 			return $avatar;
 	
 		//get the url of the image
