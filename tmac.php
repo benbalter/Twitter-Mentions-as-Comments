@@ -45,6 +45,10 @@ class TMAC {
 		add_action( 'admin_menu', array( &$this, 'options_menu_init' ) );
 		add_action( 'wp_ajax_tmac_hide_donate', array(&$this, 'hide_donate') );
 		add_action( 'admin_head', array( &$this, 'enqueue_scripts' ) );
+		
+		//i18n
+		load_plugin_textdomain( 'twitter-mentions-as-comments', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
+
 	}
 
 	/**
