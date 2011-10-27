@@ -51,6 +51,9 @@ Yes. Because Tweets go through WordPress's built-in comment moderation system, i
 
 == Changelog ==
 
+= 1.0.1 =
+* Improved scheduling of automatic checks
+
 = 1.0 =
 * Codebase completely re-written from the ground up
 * Significant performance improvements by integrating with native WordPress caching class
