@@ -286,7 +286,7 @@ class TMAC {
 			return;
 		
 		//if we are in hourly cron mode, check for Tweets
-		$this->_mentions_check();
+		$this->mentions_check();
 		
 	}
 
