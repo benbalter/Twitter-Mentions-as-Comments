@@ -34,6 +34,8 @@ You can see it in action on the [WP Resume Plugin page](http://ben.balter.com/20
 
 *Enjoy using Twitter Mentions as Comments? Feel free to [make a small donation](http://ben.balter.com/donate/) to support the software's continued development.*
 
+[Photo via [joshsemans](http://www.flickr.com/photos/joshsemans/3414271359/)]
+
 == Installation ==
 
 1. Download and install the plugin
