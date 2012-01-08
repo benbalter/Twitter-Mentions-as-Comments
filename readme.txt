@@ -53,6 +53,9 @@ Yes. Because Tweets go through WordPress's built-in comment moderation system, i
 
 == Changelog ==
 
+= 1.0.3 =
+* Fix for including RTs option toggling opposite behavior of what should be expected (Special thanks [Joel Knight](http://www.packetmischief.ca/) for the patch)
+
 = 1.0.2 = 
 * Corrected bug that would prevent scheduled checks from properly firing.
 
