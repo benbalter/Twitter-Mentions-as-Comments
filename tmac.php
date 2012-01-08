@@ -174,7 +174,7 @@ class TMAC {
 		foreach ( $mentions->results as $tweet ) {
 		
 			//If they exclude RTs, look for "RT" and skip if needed
-			if (!isset($options['RTs']) || !$options['RTs']) {
+			if (!isset($options['RTs']) || $options['RTs'] == 1) {
 				if ( substr( $tweet->text, 0, 2 ) == 'RT' ) 
 					continue;
 			}
