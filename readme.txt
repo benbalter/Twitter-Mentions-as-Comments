@@ -4,7 +4,7 @@ Donate link: http://ben.balter.com/donate/
 Tags: comments, twitter, mentions
 Requires at least: 3.0
 Tested up to: 3.2
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 
 Twitter Mentions as Comments scours Twitter for people talking about your site & silently inserts their Tweets alongside your existing comments.
 
