@@ -3,7 +3,7 @@
 Plugin Name: Twitter Mentions as Comments
 Plugin URI: http://ben.balter.com/2010/11/29/twitter-mentions-as-comments/
 Description: Queries the Twitter API on a regular basis for tweets about your posts. 
-Version: 1.0.3
+Version: 1.0.4
 Author: Benjamin J. Balter
 Author URI: http://ben.balter.com
 License: GPL2
@@ -472,11 +472,11 @@ class TMAC {
 			//If we hit the API limit, kick
 			if ( !$data )
 				return false;
-			
-			//Because our query will return the name in the form of REAL NAME (@Handle), split the string at "(@"
-			$name = substr( $data->name, strrpos($data->name, '(@') );
 		
 		}
+		
+		//Because our query will return the name in the form of REAL NAME (@Handle), split the string at "(@"
+		$name = substr( $data->name, strrpos($data->name, '(@') );
 		
 		$name = apply_filters( 'tmac_author_name', $name, $twitterID );
 		

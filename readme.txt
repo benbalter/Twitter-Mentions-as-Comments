@@ -53,6 +53,9 @@ Yes. Because Tweets go through WordPress's built-in comment moderation system, i
 
 == Changelog ==
 
+= 1.0.4 = 
+* Fix for bug where the name of authors with previous tweets would display the twitter username multiple times
+
 = 1.0.3 =
 * Fix for including RTs option toggling opposite behavior of what should be expected (Special thanks [Joel Knight](http://www.packetmischief.ca/) for the patch)
 
