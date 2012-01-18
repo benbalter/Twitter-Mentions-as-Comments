@@ -54,7 +54,7 @@ Yes. Because Tweets go through WordPress's built-in comment moderation system, i
 == Changelog ==
 
 = 1.0.4 = 
-* **NOTE: you will have to reactivate the plugin after upgrading to this version**
+* **NOTE: you must manually reactivate the plugin after upgrading to this version**
 * Fix for bug where the name of authors with previous tweets would display the twitter username multiple times
 * Changed name of primary plugin file to conform to traditional plugin format
 
