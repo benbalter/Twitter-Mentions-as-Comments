@@ -464,7 +464,7 @@ class TMAC {
 		$name = $wpdb->get_var( $wpdb->prepare( "SELECT comment_author FROM $wpdb->comments WHERE comment_author_email = %s and comment_approved = '1' LIMIT 1", $twitterID . '@twitter.com' ) );
 		
 		//if they do not previosly have a comment, or that comment doesn't have a real name, call the Twitter API
-		if ( empty( $name ) || substr($name, 0, 1) == '@' ) {
+		if ( empty( $name ) || substr( $name, 0, 1 ) == '@' ) {
 		
 			//Query the API
 			$data = $this->query_twitter( $twitterID );
@@ -472,11 +472,13 @@ class TMAC {
 			//If we hit the API limit, kick
 			if ( !$data )
 				return false;
+				
+			$name = $data->name;
 		
 		}
 		
 		//Because our query will return the name in the form of REAL NAME (@Handle), split the string at "(@"
-		$name = substr( $data->name, strrpos($data->name, '(@') );
+		$name = substr( $name, strrpos( $name, '(@' ) );
 		
 		$name = apply_filters( 'tmac_author_name', $name, $twitterID );
 		
