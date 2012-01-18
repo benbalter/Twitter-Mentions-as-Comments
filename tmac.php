@@ -12,7 +12,7 @@ License: GPL2
 class TMAC {
 
 	static $instance;
-	public $version = '1.0';
+	public $version = '1.0.4';
 	public $api_call_limit = '150';
 	public $ttl = 3600;
 	public $ua = 'Twitter Mentions as Comments';
