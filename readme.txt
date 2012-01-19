@@ -4,7 +4,7 @@ Donate link: http://ben.balter.com/donate/
 Tags: comments, twitter, mentions
 Requires at least: 3.0
 Tested up to: 3.2
-Stable tag: 1.0.3
+Stable tag: 1.0.4
 
 Twitter Mentions as Comments scours Twitter for people talking about your site & silently inserts their Tweets alongside your existing comments.
 
@@ -56,7 +56,9 @@ Yes. Because Tweets go through WordPress's built-in comment moderation system, i
 == Changelog ==
 
 = 1.0.4 = 
+* **NOTE: you must manually reactivate the plugin after upgrading to this version**
 * Fix for bug where the name of authors with previous tweets would display the twitter username multiple times
+* Changed name of primary plugin file to conform to traditional plugin format
 
 = 1.0.3 =
 * Fix for including RTs option toggling opposite behavior of what should be expected (Special thanks [Joel Knight](http://www.packetmischief.ca/) for the patch)
