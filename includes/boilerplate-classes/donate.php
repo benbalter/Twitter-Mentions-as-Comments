@@ -16,7 +16,7 @@ class Plugin_Boilerplate_Donate {
 		else
 			self::$parent = &$instance;
 			
-		add_action( 'wp_ajax_' . self::$parent->slug_ . '_hide_donate', array( &$this, 'hide') );
+		add_action( 'wp_ajax_' . self::$parent->slug_ . '_hide_donate', array( &self::$parent->donate, 'hide') );
 
 	}
 	

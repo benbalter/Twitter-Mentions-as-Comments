@@ -35,7 +35,7 @@ class Plugin_Boilerplate_Capabilities {
 		else
 			self::$parent = &$instance;
 
-		add_action( 'init', array( &$this, 'add_caps' ) );
+		add_action( 'init', array( &self::$parent->capabilities, 'add_caps' ) );
 	
 	}
 	

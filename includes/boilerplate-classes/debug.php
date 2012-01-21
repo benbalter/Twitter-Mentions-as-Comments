@@ -16,7 +16,7 @@ class Plugin_Boilerplate_Debug {
 		else
 			self::$parent = &$instance;
 			
-		add_action( 'init', array( &$this, 'init' ), 5 );
+		add_action( 'init', array( &self::$parent->debug, 'init' ), 5 );
 	
 	}
 	
@@ -28,8 +28,8 @@ class Plugin_Boilerplate_Debug {
 		if ( !current_user_can( 'manage_options' ) || !WP_DEBUG )
 	    	return;
 
-		add_filter('debug_bar_panels', array( &$this, 'init_panel' ) );	
-		add_filter('debug_bar_panels',  array( &$this, 'register_panel' ), 20 );
+		add_filter('debug_bar_panels', array( &self::$parent->debug, 'init_panel' ) );	
+		add_filter('debug_bar_panels',  array( &self::$parent->debug, 'register_panel' ), 20 );
 
 	}
 	
@@ -96,7 +96,13 @@ class Plugin_Boilerplate_Debug {
 	 * Because you can't declare a class within a class, create an anonymous function to extend Debug_Bar_Panel
 	 */
 	function init_panel( $panels ) {
-
+		var_dump(  self::$parent->name );
+		
+		if ( class_exists( self::$parent->slug_ . '_Debug_Panel' ) ) {
+			remove_filter('debug_bar_panels',  array( &$this, 'register_panel' ), 20 );
+			return;
+		}
+			
 		$code = 'class ' . self::$parent->slug_ . '_Debug_Panel extends Debug_Bar_Panel { 
 			static $parent; 
 			
