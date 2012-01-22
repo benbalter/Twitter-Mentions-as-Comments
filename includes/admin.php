@@ -18,21 +18,14 @@ class Twitter_Mentions_As_Comments_Admin {
 		else
 			self::$parent = &$instance;
 		
-		add_action( 'admin_init', array( &$this, 'options_init' ) );
 		add_action( 'admin_menu', array( &$this, 'options_menu_init' ) );
 	
-		$this->enqueue->data = array ( 'hide_manual_cron_details' => !( self::$parent->options->manual_cron ) );
+		add_action( 'tmac_init', array( &$this, 'init' ) );
 	
 	}
 	
-
-	/**
-	 * Tells WP that we're using a custom settings field
-	 */
-	function options_init() {
-	    
-	    register_setting( 'tmac_options', 'tmac_options' );
-	
+	function init() {
+		self::$parent->enqueue->data = array ( 'hide_manual_cron_details' => !( self::$parent->options->manual_cron ) );
 	}
 		
 	/**
