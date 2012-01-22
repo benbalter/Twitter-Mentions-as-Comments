@@ -4,7 +4,6 @@ if ( !class_exists( 'Plugin_Boilerplate' ) ):
 
 class Plugin_Boilerplate {
 	
-	static $instance;
 	public $name = 'Plugin Boilerplate'; //Human-readable name of plugin
 	public $slug = 'plugin-boilerplate'; //plugin slug, generally base filename and in url on wordpress.org
 	public $slug_ = 'plugin_boilerplate'; //slug with underscores (PHP/JS safe)
@@ -15,8 +14,6 @@ class Plugin_Boilerplate {
 	public $classes = array();
 	
 	function __construct() {
-
-		self::$instance = &$this;
 		
 		//verify minimum WP version, and shutdown if insufficient
 		if ( !$this->_verify_wp_version() )
