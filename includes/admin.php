@@ -5,25 +5,28 @@
  */
 class Twitter_Mentions_As_Comments_Admin {
 
-	static $parent;
-
-	function __construct( &$instance ) {
+	private $parent;
+	
+	function __construct( &$parent ) {
 	
 		if ( !is_admin() )
 			return;
-	
-		self::$parent = &$instance;
-		
+
+		$this->parent = &$parent;
+			
 		add_action( 'admin_menu', array( &$this, 'options_menu_init' ) );
 	
-		add_action( 'tmac_init', array( &$this, 'init' ) );
+		add_action( 'tmac_enqueue_init', array( &$this, 'enqueue_init' ) );
 		
 		add_filter( 'tmac_options_validate', array( &$this, 'options_validate' ) );
 	
 	}
 	
-	function init() {
-		self::$parent->enqueue->data = array ( 'hide_manual_cron_details' => !( self::$parent->options->manual_cron ) );
+	/**
+	 * Register enqueue data
+	 */
+	function enqueue_init() {
+		$this->parent->enqueue->data = array ( 'hide_manual_cron_details' => !( $this->parent->options->manual_cron ) );
 	}
 		
 	/**
@@ -33,12 +36,12 @@ class Twitter_Mentions_As_Comments_Admin {
 	function options() {
 
 		$mentions = false;
-		$options = &self::$parent->options;
+		$options = &$this->parent->options;
 		
 		if ( isset( $_GET['force_refresh'] ) && $_GET['force_refresh'] == true )
-			$mentions = self::$parent->mentions_check();	
+			$mentions = $this->parent->mentions_check();	
 		
-		self::$parent->template->options( compact( 'mentions', 'options' ) );
+		$this->parent->template->options( compact( 'mentions', 'options' ) );
 		
 	}
 	
@@ -46,7 +49,6 @@ class Twitter_Mentions_As_Comments_Admin {
 	 * Sanitize options
 	 */
 	function options_validate( $options ) {
-		
 		
 		$options['posts_per_check'] = (int) $options['posts_per_check'];
 		
@@ -58,6 +60,9 @@ class Twitter_Mentions_As_Comments_Admin {
 	
 	}
 	
+	/**
+	 * Register menu
+	 */
 	function options_menu_init() {
 		add_options_page( 'Twitter Mentions as Comments Options', 'Twitter -> Comments', 'manage_options', 'tmac_options', array( &$this, 'options' ) );	
 	}

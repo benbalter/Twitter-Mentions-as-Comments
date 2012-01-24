@@ -1,17 +1,17 @@
 <?php
-
+/**
+ * Makes calls to the Twitter API (or pulls from local cache)
+ * @package Twitter_Mentions_As_Comments
+ */
 class Twitter_Mentions_As_Comments_Calls {
 	
-	static $parent;
+	private $parent;
+	public $count;
 	
-	function __construct( &$instance ) {
-	
-		//create or store parent instance
-		if ( $instance === null ) 
-			self::$parent = new Plugin_Boilerplate;
-		else
-			self::$parent = &$instance;
-	
+	function __construct( &$parent ) {
+
+		$this->parent = &$parent;
+		
 	}
 	
 	/**
@@ -21,13 +21,12 @@ class Twitter_Mentions_As_Comments_Calls {
 	 * @since .1
 	 */
 	function query_twitter( $handle ) {
-		global $tmac_api_calls;		
 		
 		//increment API counter
-		$tmac_api_calls++;
+		$this->count++;
 		
 		//if we are over the limit, kick
-		if ( $tmac_api_calls > $this->options->api_call_limit ) {
+		if ( $this->count > $this->options->api_call_limit ) {
 			
 			//if we already sent an e-mail this go around, don't send again
 			global $tmac_api_limit_msg_sent;
@@ -50,13 +49,10 @@ class Twitter_Mentions_As_Comments_Calls {
 		//build the URL
 		$url = 'http://api.twitter.com/1/users/show/'. $handle .'.json';
 			
-		$this->api->apply_filters( 'query_url', $url, $handle );
+		$this->parent->api->apply_filters( 'query_url', $url, $handle );
 		
 		//make the call
 		$data = json_decode( wp_remote_retrieve_body( wp_remote_get( $url ) ) );
-		
-		//increment counter	
-		$tmac_api_calls++;
 		
 		return $data;
 			
@@ -72,7 +68,7 @@ class Twitter_Mentions_As_Comments_Calls {
 	
 		global $wpdb;
 		
-		if ( $name = $this->cache->get( $twitterID . '_name' ) )
+		if ( $name = $this->parent->cache->get( $twitterID . '_name' ) )
 			return $name;
 		
 		//Check to see if twitter user has previously commented, if so just grab their name
@@ -95,9 +91,9 @@ class Twitter_Mentions_As_Comments_Calls {
 		//Because our query will return the name in the form of REAL NAME (@Handle), split the string at "(@"
 		$name = substr( $name, strrpos( $name, '(@' ) );
 		
-		$name = $this->api->apply_filters( 'author_name', $name, $twitterID );
+		$name = $this->parent->api->apply_filters( 'author_name', $name, $twitterID );
 		
-		$this->cache->set( $twitterID, $name . '_author_name' );
+		$this->parent->cache->set( $twitterID . '_name', $name );
 		
 		return $name;
 		
@@ -112,7 +108,7 @@ class Twitter_Mentions_As_Comments_Calls {
 	 */
 	function get_profile_image( $twitterID, $comment_id) {
 	
-		if ( $image = $this->cache->get( $twitterID . '_profile_image' ) )
+		if ( $image = $this->parent->cache->get( $twitterID . '_profile_image' ) )
 			return $image;
 		
 		//Check to see if we already have the image stored in comment meta
@@ -129,9 +125,9 @@ class Twitter_Mentions_As_Comments_Calls {
 			
 		}
 		
-		$image = $this->api->apply_filters( 'user_image', $image, $twitterID, $comment_id );
+		$image = $this->parent->api->apply_filters( 'user_image', $image, $twitterID, $comment_id );
 		
-		$this->cache->set( $twitterID, $image . '_profile_image' );
+		$this->parent->cache->set( $twitterID . '_profile_image', $image );
 		
 		return $image;
 	}
@@ -146,17 +142,37 @@ class Twitter_Mentions_As_Comments_Calls {
 	function get_mentions( $postID ) {
 		
 		//Retrive last ID checked for on this post so we don't re-add a comment already added
-		$lastID = $this->get_lastID( $postID );
+		$lastID = $this->parent->get_lastID( $postID );
 		
 		//Build URL, verify that $lastID is a string and not scientific notation, see http://jetlogs.org/2008/02/05/php-problems-with-big-integers-and-scientific-notation/
 		$url = 'http://search.twitter.com/search.json?rpp=100&since_id=' . $lastID . '&q=' . urlencode( get_permalink( $postID ) ) . '%20OR%20' . urlencode( get_bloginfo( 'wpurl' ) . '/?p=' . $postID );	
 		
-		$url = $this->api->apply_filters( 'query_url', $url, $postID );
+		$url = $this->parent->api->apply_filters( 'query_url', $url, $postID );
 		
 		//make the API call and pass it back
 		$data = json_decode( $response = wp_remote_retrieve_body( wp_remote_get( $url ) ) );
-			
-		return  $this->api->apply_filters( 'query_response', $data, $postID );;	
+
+		return $this->parent->api->apply_filters( 'query_response', $data, $postID );
+		
 	}
+	
+	/**
+	 * Resets internal API counter every hour
+	 *
+	 * User API is limited to 150 unauthenticated calls / hour
+	 * Authenticated API is limited to 350 / hour
+	 * Search calls do not count toward total, although search has an unpublished limit
+	 *
+	 * @since .2
+	 * @todo query the API for our actual limit
+	 */
+	function reset_count() {
+		
+		$this->count = 0;
+		$this->parent->options->api_call_counter = 0;
+		$this->parent->api->do_action( 'api_counter_reset' );
+		
+	}
+
 	
 }

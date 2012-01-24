@@ -1,5 +1,4 @@
 <div class="wrap">
-	<?php $this->parent->debug->log( $this->parent->options->get_options() ); ?>
 		<h2><?php _e( 'Twitter Mentions as Comments Options', 'twitter-mentions-as-comments' ); ?></h2>
 		<form method="post" action='options.php' id="tmac_form">
 	<?php settings_errors(); ?>
@@ -44,7 +43,7 @@
 			<tr valign="top">
 				<th scope="row">Force Check</th>
 				<td>
-					<a href="?page=<?php echo  $this->parent->slug_; ?>&force_refresh=true"><?php _e( 'Check for New Tweets Now', 'twitter-mentions-as-comments' ); ?></a><br />
+					<a href="<?php echo esc_url( add_query_arg( 'force_refresh', true ) ); ?>"><?php _e( 'Check for New Tweets Now', 'twitter-mentions-as-comments' ); ?></a><br />
 					<span class="description"><?php _e( 'Normally the plugin checks for new Tweets on its own. Click the link above to force a check immediately.', 'twitter-mentions-as-comments' ); ?></span>
 				</td>
 			</tr>

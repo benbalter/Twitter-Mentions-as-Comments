@@ -43,13 +43,14 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate {
 		//avatars
 		add_filter( 'get_avatar', array( &$this, 'filter_avatar' ), 10, 2  );
 		
+		add_action( 'tmac_options_init', array( &$this, 'options_init' ) );
 		
-		add_action( 'tmac_init', array( &$this, 'init' ) );
-		
-
 	}
 	
-	function init() {
+	/**
+	 * Registers default options
+	 */
+	function options_init() {
 
 		$this->options->defaults = array( 	'comment_type' => '', 
 											'posts_per_check' => -1, 
@@ -99,7 +100,7 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate {
 		foreach ($comments as $comment) {
 		
 			//if this isn't a TMAC comment, tkip
-			if ( $comment->comment_agent != $this->ua )
+			if ( $comment->comment_agent != $this->name )
 				continue;
 			
 			//parse the ID from the author URL
@@ -121,7 +122,7 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate {
 	function insert_metions( $postID ) {
 			
 		//Get array of mentions
-		$mentions = $this->get_mentions( $postID );
+		$mentions = $this->calls->get_mentions( $postID );
 	
 		//if there are no tweets, update post meta to speed up subsequent calls and return
 		if ( empty( $mentions->results ) ) {
@@ -154,7 +155,9 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate {
 		
 			//insert comment using our modified function
 			$commentdata = $this->api->apply_filters( 'commentdata', $commentdata );
-			$comment_id = $this->new_comment( $commentdata );
+			
+			if ( !empty( $commentdata ) ) 
+				$comment_id = $this->new_comment( $commentdata );
 			
 			//Cache the user's profile image
 			add_comment_meta($comment_id, 'tmac_image', $tweet->profile_image_url, true);
@@ -177,12 +180,11 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate {
 	 * @todo break query into multiple queries so recent posts are checked more frequently
 	 */
 	function mentions_check(){
-		global $tmac_api_calls;
-						
+					
 		$mentions = 0;
 			
 		//set API call counter
-		$tmac_api_calls = $this->options->api_call_counter;
+		$this->calls->count = $this->options->api_call_counter;
 		
 		//Get all posts
 		$posts = get_posts('numberposts=' . $this->options->posts_per_check );
@@ -193,30 +195,14 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate {
 			$mentions += $this->insert_metions( $post->ID );
 	
 		//update the stored API counter
-		$this->options->api_call_counter = $tmac_api_calls;
+		$this->options->api_call_counter = $this->calls->count;
 		
 		$this->api->do_action( 'mentions_check' );
 	
 		return $mentions;
 	}
 	
-	/**
-	 * Resets internal API counter every hour
-	 *
-	 * User API is limited to 150 unauthenticated calls / hour
-	 * Authenticated API is limited to 350 / hour
-	 * Search calls do not count toward total, although search has an unpublished limit
-	 *
-	 * @since .2
-	 * @todo query the API for our actual limit
-	 */
-	function reset_api_counter() {
 		
-		$this->options->api_call_counter = 0;
-		$this->api->do_action( 'api_counter_reset' );
-		
-	}
-	
 	/**
 	 * Function run hourly via WP cron
 	 * @since 0.3-beta
@@ -224,7 +210,7 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate {
 	function hourly() {
 			
 		//reset API counter
-		$this->reset_api_counter();
+		$this->calls->reset_count();
 		
 		if ( $this->options->manual_cron )
 			return;
@@ -285,7 +271,7 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate {
 		
 		//	BEGIN TMAC MODIFICATIONS (don't use current timestamp but rather twitter timestamp)
 		$commentdata['comment_author_IP'] = '';
-		$commentdata['comment_agent']     = $this->ua;
+		$commentdata['comment_agent']     = $this->name;
 		$commentdata['comment_date']     =  get_date_from_gmt( $commentdata['comment_date_gmt'] );
 		$commentdata = apply_filters( 'tmac_comment', $commentdata );
 		//	END TMAC MODIFICATIONS
@@ -341,7 +327,7 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate {
 	function build_author_name( $twitterID ) {
 		
 		//get the cached real name or query the API
-		$real_name = $this->get_author_name( $twitterID );
+		$real_name = $this->calls->get_author_name( $twitterID );
 	
 		//If we don't have a real name, just use their twitter handle
 		if ( !$real_name ) 
