@@ -3,20 +3,16 @@
  * Provides interface for debugging variables
  * @package Plugin_Boilerplate
  */
-class Plugin_Boilerplate_Debug {
+class Plugin_Boilerplate_Debug_v_1 {
 
 	public $history = array();
-	static $parent;
+	private $parent;
 
-	function __construct( $instance ) {
+	function __construct( $parent ) {
 	
-		//create or store parent instance
-		if ( $instance === null ) 
-			self::$parent = new Plugin_Boilerplate;
-		else
-			self::$parent = &$instance;
+		$this->parent = &$parent;
 			
-		add_action( 'init', array( &self::$parent->debug, 'init' ), 5 );
+		add_action( 'init', array( &$this, 'init' ), 5 );
 	
 	}
 	
@@ -28,8 +24,8 @@ class Plugin_Boilerplate_Debug {
 		if ( !current_user_can( 'manage_options' ) || !WP_DEBUG )
 	    	return;
 
-		add_filter('debug_bar_panels', array( &self::$parent->debug, 'init_panel' ) );	
-		add_filter('debug_bar_panels',  array( &self::$parent->debug, 'register_panel' ), 20 );
+		add_filter('debug_bar_panels', array( &$this, 'init_panel' ) );	
+		add_filter('debug_bar_panels',  array( &$this, 'register_panel' ), 20 );
 
 	}
 	
@@ -76,9 +72,9 @@ class Plugin_Boilerplate_Debug {
 	 * Registers panel with debug bar
 	 */	
 	function register_panel( $panels ) {
-		$slug = self::$parent->slug_;
+		$slug = $this->parent->slug_;
 		$class = "{$slug}_Debug_Panel";
-		$panels[] = new $class( self::$parent->name . ' Debug', &$this );
+		$panels[] = new $class( $this->parent->name . ' Debug', &$this );
 		
 		return $panels;
 			
@@ -96,27 +92,21 @@ class Plugin_Boilerplate_Debug {
 	 * Because you can't declare a class within a class, create an anonymous function to extend Debug_Bar_Panel
 	 */
 	function init_panel( $panels ) {
-		var_dump(  self::$parent->name );
-		
-		if ( class_exists( self::$parent->slug_ . '_Debug_Panel' ) ) {
-			remove_filter('debug_bar_panels',  array( &$this, 'register_panel' ), 20 );
-			return;
-		}
-			
-		$code = 'class ' . self::$parent->slug_ . '_Debug_Panel extends Debug_Bar_Panel { 
+
+		$code = 'class ' . $this->parent->slug_ . '_Debug_Panel extends Debug_Bar_Panel { 
 			static $parent; 
 			
 			function __construct( $name, &$instance ) { 
-				self::$parent = &$instance; 
+				$this->parent = &$instance; 
 				parent::__construct( $name ); 
 			} 
 			
 			function render() { 
-				self::$parent->render(); 
+				$this->parent->render(); 
 			} 
 			
 			function prerender() {
-				if ( empty( self::$parent->history ) )
+				if ( empty( $this->parent->history ) )
 					$this->set_visible( false );
 			}	
 			
