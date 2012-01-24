@@ -7,18 +7,14 @@
  
 class Hello_Dolly2_Sample_Lyrics {
 	
-	static $parent;
+	private $parent;
 	public $lyrics;
 	
-	function __construct( &$instance ) {
+	function __construct( &$parent ) {
 		
-		//create or store parent instance
-		if ( $instance === null ) 
-			self::$parent = new Plugin_Boilerplate;
-		else
-			self::$parent = &$instance;
+		$this->parent = &$parent;
 			
-			$this->lyrics = array ( 
+		$this->lyrics = array ( 
 							__( "Hello, Dolly" ),
 	    					__( "Well, hello ), Dolly" ),
 	    					__( "It's so nice to have you back where you belong" ),
@@ -49,19 +45,22 @@ class Hello_Dolly2_Sample_Lyrics {
 	    					__( "Dolly'll never go away again" ),
 	    			);
 		
-		self::$parent->options->defaults = array( 'lyrics' => &$this->lyrics );
-
-		add_filter( self::$parent->prefix . 'lyric', array( &$this, 'add_p_tag' ) );
+		add_action( 'hd2_options_init', array( &$this, 'options_init' ) );
+		add_filter( $this->parent->prefix . 'lyric', array( &$this, 'add_p_tag' ) );
 		add_action( 'admin_notices', array( &$this, 'lyric' ) );
 		add_action( 'admin_head', array( &$this, 'css' ) );
 		add_action( 'admin_init', array( &$this, 'js_lyrics' ) );
+	}
+	
+	function options_init() {
+		$this->parent->options->defaults = array( 'lyrics' => &$this->lyrics );
 	}
 	
 	/**
 	 * Returns texturized array of all lyrics
 	 */
 	function get_lyrics() {
-		$lyrics = self::$parent->options->lyrics;
+		$lyrics = $this->parent->options->lyrics;
 		array_walk( &$lyrics, 'wptexturize' );
 		return $lyrics;
 	}
@@ -74,7 +73,7 @@ class Hello_Dolly2_Sample_Lyrics {
 
 		$lyrics = $this->get_lyrics();
 		$lyric = $lyrics[ array_rand( $lyrics ) ];
-		return self::$parent->api->apply_filters( 'lyric', $lyric );
+		return $this->parent->api->apply_filters( 'lyric', $lyric );
 		
 	}
 	
@@ -82,7 +81,7 @@ class Hello_Dolly2_Sample_Lyrics {
 	 * Enqueue lyrics via localize script
 	 */
 	function js_lyrics() {
-		self::$parent->enqueue->admin_data['lyrics'] = $this->get_lyrics();
+		$this->parent->enqueue->admin_data['lyrics'] = $this->get_lyrics();
 	}
 	
 	/**
@@ -96,14 +95,14 @@ class Hello_Dolly2_Sample_Lyrics {
 	 * Filter to wrap lyric in <p> tags
 	 */
 	function add_p_tag( $lyric ) { 
-		return self::$parent->template->get( 'sample-header', compact( 'lyric' ) );
+		return $this->parent->template->get( 'sample-header', compact( 'lyric' ) );
 	}
 	
 	/**
 	 * Inject CSS into admin header
 	 */
 	function css() {
-		self::$parent->template->load( 'sample-css' );
+		$this->parent->template->load( 'sample-css' );
 	}
 		
 }

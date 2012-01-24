@@ -27,18 +27,23 @@ License: GPL2
 require_once( dirname( __FILE__ ) . '/includes/class.plugin-boilerplate.php' );
 
 class Hello_Dolly2 extends Plugin_Boilerplate {
-
+	
+	static $instance;
 	public $name = 'Hello Dolly 2.0'; //Human-readable name of plugin
 	public $slug = 'hello-dolly2'; //plugin slug, generally base filename and in url on wordpress.org
 	public $slug_ = 'hello_dolly2'; //slug with underscores (PHP/JS safe)
 	public $prefix = 'hd2_'; //prefix to append to all options, API calls, etc. w/ trailing underscore
+	public $directory = null;
+	public $version = '1.0';
 
 	/**
 	 * Construct the boilerplate and autoload all child classes
 	 */
 	function __construct() {
 	
-		parent::__construct();
+		self::$instance = &$this;
+		$this->directory = dirname( __FILE__ );
+		parent::__construct( &$this );
 		
 	}
 	
