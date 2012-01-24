@@ -4,7 +4,7 @@ class Twitter_Mentions_As_Comments_Calls {
 	
 	static $parent;
 	
-	function __construct() {
+	function __construct( &$instance ) {
 	
 		//create or store parent instance
 		if ( $instance === null ) 

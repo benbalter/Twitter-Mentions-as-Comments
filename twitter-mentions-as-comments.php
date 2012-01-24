@@ -19,7 +19,7 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate {
 	public $slug = 'twitter-menttions-as-comments';
 	public $slug_ = 'twitter_mentions_as_comments';
 	public $prefix = 'tmac_';
-
+	public $directory = null;
 	public $version = '1.5';
 
 	/**
@@ -29,12 +29,13 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate {
 	function __construct() {
 	
 		self::$instance = &$this;
-		parent::__construct();
+		$this->directory = dirname( __FILE__ );
+		parent::__construct( &$this );
 		
 		add_action('tmac_hourly_check', array( &$this, 'hourly' ) );
 		
 		//Kill cron on deactivation
-		register_deactivation_hook(__FILE__, array( &$this, 'deactivation' ) );
+		register_deactivation_hook( __FILE__, array( &$this, 'deactivation' ) );
 				
 		//float bug fix
 		add_filter( 'tmac_lastID', array( &$this, 'lastID_float_fix'), 10, 2 );
@@ -44,17 +45,19 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate {
 		
 		
 		add_action( 'tmac_init', array( &$this, 'init' ) );
+		
 
 	}
 	
 	function init() {
+
 		$this->options->defaults = array( 	'comment_type' => '', 
 											'posts_per_check' => -1, 
 											'hide-donate' => false,
 											'api_call_limit' => 150,
 											'RTs' => 1,
-											);
-											
+									);
+							
 	}
 	
 
@@ -237,7 +240,7 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate {
 	 * @since 1.0
 	 */
 	function upgrade( $from, $to ) {
-	
+
 		wp_schedule_event( time(), 'hourly', 'tmac_hourly_check' );
 			
 		//change option name pre-1.5
@@ -363,11 +366,11 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate {
 	function filter_avatar( $avatar, $data) {
 		
 		//If this is a real comment (not a tweet), kick
-		if ( !isset( $data->comment_agent ) || $data->comment_agent != $this->ua )
+		if ( !isset( $data->comment_agent ) || $data->comment_agent != $this->name )
 			return $avatar;
 	
 		//get the url of the image
-		$url = $this->get_profile_image ( substr( $data->comment_author, 1 ), $data->comment_ID);
+		$url = $this->calls->get_profile_image ( substr( $data->comment_author, 1 ), $data->comment_ID);
 		
 		//replace the twitter image with the default avatar and return
 		return preg_replace("/http:\/\/([^']*)/", $url, $avatar);
