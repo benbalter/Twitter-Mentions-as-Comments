@@ -1,3 +1,10 @@
+<?php
+/**
+ * Provides example options template
+ * @project Plugin_Boilerplate
+ * @subproject Hello_Dolly2
+ */
+?>
 <div class="wrap">
 	<h2><?php _e( 'Hello Dolly Options' ); ?></h2>
 	<form method="post" action='options.php' id="hd2_form">

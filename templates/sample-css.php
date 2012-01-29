@@ -2,6 +2,7 @@
 /**
  * Template for sample plugin to inject CSS into header
  * @project Plugin_Boilerplate
+ * @subproject Hello_Dolly2
  */
 $x = is_rtl() ? 'left' : 'right';
 ?>		
