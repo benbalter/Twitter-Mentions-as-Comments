@@ -11,10 +11,10 @@ License: GPL2
 
 /* 	Twitter Mentions as Comments
  *
- * 	Twitter Mentions as Comments scours Twitter for people talking about your site
+ *  Twitter Mentions as Comments scours Twitter for people talking about your site
  *	& silently inserts their Tweets alongside your existing comments.
  *
- *	Copyright (C) 2011-2012  Benjamin J. Balter  ( ben@balter.com -- http://ben.balter.com )
+ *  Copyright (C) 2011-2012  Benjamin J. Balter  ( ben@balter.com -- http://ben.balter.com )
  *
  *	This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -29,11 +29,11 @@ License: GPL2
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * 	@copyright 2011-2012
- *	@license GPL v3
- * 	@version 1.0.4
- * 	@package Twitter_Mentions_As_Comments
- * 	@author Benjamin J. Balter <ben@balter.com>
+ *  @copyright 2011-2012
+ *  @license GPL v3
+ *  @version 1.0.4
+ *  @package Twitter_Mentions_As_Comments
+ *  @author Benjamin J. Balter <ben@balter.com>
  */
 
 require_once dirname( __FILE__ ) . '/includes/class.plugin-boilerplate.php';
