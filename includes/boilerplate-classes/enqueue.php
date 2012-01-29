@@ -23,7 +23,7 @@ class Plugin_Boilerplate_Enqueue_v_1 {
 
 		add_action( 'admin_enqueue_scripts', array( &$this, 'enqueue_admin_js' ), 50 );
 		add_action( 'admin_enqueue_scripts', array( &$this, 'enqueue_admin_css' ), 50 );
-		add_action( 'wp_enqueue_scripts', array( &$this, 'enqueue_front_end_css' ), 50 );
+		add_action( 'wp_print_styles', array( &$this, 'enqueue_front_end_css' ), 50 );
 		add_action( 'wp_enqueue_scripts', array( &$this, 'enqueue_front_end_js' ), 50 );
 
 	}
