@@ -246,7 +246,7 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate {
 			return;
 
 		//if we are in hourly cron mode, check for Tweets
-		$this->mentions_check();
+		$this->calls->mentions_check();
 
 	}
 
