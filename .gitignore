@@ -4,9 +4,4 @@
 .Spotlight-V100
 .Trashes
 error_log
-<<<<<<< HEAD
-=======
-
-#for child plugins
-#sample-*.php
->>>>>>> a819e00da88afd06581e447615f3a8cac362499a
+sample-*
