@@ -32,7 +32,7 @@ class Twitter_Mentions_As_Comments_Calls {
 		$this->count++;
 
 		//if we are over the limit, kick
-		if ( $this->count > $this->options->api_call_limit ) {
+		if ( $this->count > $this->parent->options->api_call_limit ) {
 
 			//if we already sent an e-mail this go around, don't send again
 			global $tmac_api_limit_msg_sent;
