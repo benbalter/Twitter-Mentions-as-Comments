@@ -9,10 +9,10 @@ Author URI: http://ben.balter.com
 License: GPL2
 */
 
-/* 	Twitter Mentions as Comments
+/*  Twitter Mentions as Comments
  *
  *  Twitter Mentions as Comments scours Twitter for people talking about your site
- *	& silently inserts their Tweets alongside your existing comments.
+ *  & silently inserts their Tweets alongside your existing comments.
  *
  *  Copyright (C) 2011-2012  Benjamin J. Balter  ( ben@balter.com -- http://ben.balter.com )
  *
