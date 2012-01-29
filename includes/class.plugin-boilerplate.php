@@ -1,11 +1,11 @@
 <?php
-/*	Plugin Boilerplate
+/*  Plugin Boilerplate
  *
- * 	Provides common boilerplate for creating object-oriented WordPress plugins.
+ *  Provides common boilerplate for creating object-oriented WordPress plugins.
  *
  *	Copyright (C) 2011-2012  Benjamin J. Balter  ( ben@balter.com -- http://ben.balter.com )
  *
- *	This program is free software: you can redistribute it and/or modify
+ *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
@@ -18,11 +18,11 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * 	@copyright 2011-2012
- *	@license GPL v3
- * 	@version 1.0
- * 	@package Plugin_Boilerplate
- * 	@author Benjamin J. Balter <ben@balter.com>
+ *  @copyright 2011-2012
+ *  @license GPL v3
+ *  @version 1.0
+ *  @package Plugin_Boilerplate
+ *  @author Benjamin J. Balter <ben@balter.com>
  */
 
 if ( !class_exists( 'Plugin_Boilerplate' ) ):
