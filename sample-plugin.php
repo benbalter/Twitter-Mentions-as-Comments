@@ -33,7 +33,7 @@ License: GPL3
 
 require_once dirname( __FILE__ ) . '/includes/class.plugin-boilerplate.php';
 
-class Hello_Dolly2 extends Plugin_Boilerplate {
+class Hello_Dolly2 extends Plugin_Boilerplate_v_1 {
 
 	static $instance;
 	public $name      = 'Hello Dolly 2.0'; //Human-readable name of plugin

@@ -27,7 +27,7 @@
 
 if ( !class_exists( 'Plugin_Boilerplate' ) ):
 
-	class Plugin_Boilerplate {
+	class Plugin_Boilerplate_v_1 {
 
 	public $name                = 'Plugin Boilerplate'; //Human-readable name of plugin
 	public $slug                = 'plugin-boilerplate'; //plugin slug, generally base filename and in url on wordpress.org
