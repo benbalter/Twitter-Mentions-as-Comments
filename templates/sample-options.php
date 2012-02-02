@@ -19,6 +19,7 @@
 				<textarea name="<?php echo $this->parent->slug_; ?>[lyrics]" id="lyrics" style="width: 400px; height: 600px;"><?php echo implode( "\n", $this->parent->options->lyrics ); ?></textarea>
 			</td>
 		</tr>
+	<?php $this->parent->template->donate(); ?>
 	</table>
 	<p class="submit">
 	         <input type="submit" class="button-primary" value="<?php _e('Save Changes') ?>" />

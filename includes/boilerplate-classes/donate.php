@@ -8,6 +8,8 @@
 class Plugin_Boilerplate_Donate_v_1 {
 
 	private $parent;
+	public $activation_option = 'pb_activation';
+	public $delay = 604800; // 60*60*24*7 = 1 week
 	public $link = 'http://ben.balter.com/donate/'; //donation link
 
 	/**
@@ -19,9 +21,36 @@ class Plugin_Boilerplate_Donate_v_1 {
 		$this->parent = &$parent;
 
 		add_action( 'wp_ajax_' . $this->parent->slug_ . '_hide_donate', array( &$this, 'hide') );
-
+		add_action( 'admin_init', array( &$this, 'store_activation' ) );
+		
 	}
 
+	/**
+	 * Stores unix timestamp of plugin activation to delay activation
+	 */
+	function store_activation() {
+		
+		if ( $this->parent->options->get_option( $this->activation_option ) !== false )
+			return;
+			
+		$this->parent->options->set_option( $this->activation_option, time() );
+		
+	}
+	
+	/**
+	 * Preveents plea from displaying for set period
+	 * @return bool true if plea should be delayed, false if should be shown
+	 */
+	function delay_plea() {
+		
+		$activated = $this->parent->options->get_option( $this->activation_option );
+		
+		if ( $activated !== false )
+			$this->store_activation();
+			
+		return $this->parent->api->apply_filters( 'delay_plea', ( time() - $activated < $this->delay ) );
+		
+	}
 
 	/**
 	 * Call to conditionally render the donate form
