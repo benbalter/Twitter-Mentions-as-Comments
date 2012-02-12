@@ -3,7 +3,7 @@
  *
  *  Provides common boilerplate for creating object-oriented WordPress plugins.
  *
- *..Copyright (C) 2011-2012  Benjamin J. Balter  ( ben@balter.com -- http://ben.balter.com )
+ *  Copyright (C) 2011-2012  Benjamin J. Balter  ( ben@balter.com -- http://ben.balter.com )
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
  *  @version 1.0
  *  @package Plugin_Boilerplate
  *  @author Benjamin J. Balter <ben@balter.com>
+ *  @link https://github.com/benbalter/Plugin-Boilerplate/
  */
 
 if ( !class_exists( 'Plugin_Boilerplate' ) ):
