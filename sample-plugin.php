@@ -1,7 +1,7 @@
 <?php
 /*
-Plugin Name: Plugin Boilerplate Sample
-Description:
+Plugin Name: Hello Dolly 2 - Plugin Boilerplate Sample
+Description: This is not just a plugin, it symbolizes the hope and enthusiasm of the next generation. When activated you will randomly see a lyric from Hello, Dolly in the upper right of your admin screen on every page.
 Version: 1.0
 Author: Benjamin J. Balter
 Author URI: http://ben.balter.com
