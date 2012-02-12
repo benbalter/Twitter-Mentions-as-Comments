@@ -38,7 +38,7 @@ License: GPL2
 
 require_once dirname( __FILE__ ) . '/includes/class.plugin-boilerplate.php';
 
-class Twitter_Mentions_As_Comments extends Plugin_Boilerplate {
+class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_1 {
 
 	//plugin boilerplate settings
 	static $instance;
