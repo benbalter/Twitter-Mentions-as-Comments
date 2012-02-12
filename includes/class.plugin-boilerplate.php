@@ -26,7 +26,7 @@
  *  @link https://github.com/benbalter/Plugin-Boilerplate/
  */
 
-if ( !class_exists( 'Plugin_Boilerplate' ) ):
+if ( !class_exists( 'Plugin_Boilerplate_v_1' ) ):
 
 	class Plugin_Boilerplate_v_1 {
 
