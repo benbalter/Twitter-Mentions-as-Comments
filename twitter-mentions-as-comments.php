@@ -259,6 +259,7 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_1 {
 	 */
 	function upgrade( $from, $to ) {
 
+	if ( !wp_next_scheduled( 'tmac_hourly_check' ) )
 		wp_schedule_event( time(), 'hourly', 'tmac_hourly_check' );
 
 		//change option name pre-1.5
@@ -275,7 +276,7 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_1 {
 	 * @since .1a
 	 */
 	function deactivation(  ) {
-		wp_clear_scheduled_hook('tmac_hourly_check');
+		wp_clear_scheduled_hook( 'tmac_hourly_check' );
 	}
 
 

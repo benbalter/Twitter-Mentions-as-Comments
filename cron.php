@@ -7,17 +7,16 @@
 
 //grab WP bootstrap
 require_once('../../../wp-load.php');
-define('TMAC_DOING_CRON', TRUE);
 
 //verify that the plugin is activated, otherwise exit
-if ( !class_exists('TMAC') )
+if ( !class_exists( 'Twitter_Mentions_As_Comments' ) )
 	exit();
 
 global $tmac;
 if ( !$tmac )
-	$tmac = new TMAC();
+	$tmac = new Twitter_Mentions_As_Comments();
 	
 $mentions = $tmac->mentions_check();
 
 ?>
-<strong><?php printf( _n( '%n mention found', '%n mentions found', $mentions), $mentions ); ?></strong>
+<?php printf( _n( '%n mention found', '%n mentions found', $mentions), $mentions ); ?>
