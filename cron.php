@@ -18,5 +18,4 @@ if ( !$tmac )
 	
 $mentions = $tmac->mentions_check();
 
-?>
-<?php printf( _n( '%n mention found', '%n mentions found', $mentions), $mentions ); ?>
+printf( _n( '%n mention found', '%n mentions found', $mentions), $mentions );
