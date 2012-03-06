@@ -1,6 +1,6 @@
 # Twitter Mentions as Comments #
 **Contributors:** benbalter  
-**Donate link:** http://ben.balter.com/donate/  
+**Donate link:** [http://ben.balter.com/donate/](http://ben.balter.com/donate/?utm_source=wp&utm_medium=gh_plugin_page&utm_campaign=tmac)  
 **Tags:** comments, twitter, mentions  
 **Requires at least:** 3.0  
 **Tested up to:** 3.2  
