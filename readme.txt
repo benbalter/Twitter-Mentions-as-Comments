@@ -59,6 +59,7 @@ Yes. Because Tweets go through WordPress's built-in comment moderation system, i
 * Codebase completely rewritten with performance, stability, customizability, and documentation improvements
 * Additional API hooks added for developers to further customize plugin's functionality
 * Plugin now hosted [on GitHub](https://github.com/benbalter/Twitter-Mentions-as-Comments/) if developers would like to fork and contribute.
+* Better internationalization support
 * GPL license now distributed with plugin
 
 = 1.0.4 = 
