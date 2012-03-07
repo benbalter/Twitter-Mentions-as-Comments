@@ -1,32 +1,189 @@
-# Copyright (C) 2010 
-# This file is distributed under the same license as the  package.
+# Copyright (C) 2012 Twitter Mentions as Comments
+# This file is distributed under the same license as the Twitter Mentions as Comments package.
 msgid ""
 msgstr ""
-"Project-Id-Version:  \n"
+"Project-Id-Version: Twitter Mentions as Comments 1.5\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/tag/twitter-mentions-as-comments\n"
-"POT-Creation-Date: 2011-10-17 14:55:59+00:00\n"
+"POT-Creation-Date: 2012-03-07 16:35:52+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2010-MO-DA HO:MI+ZONE\n"
+"PO-Revision-Date: 2012-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 
-#: tmac.php:597
+#: cron.php:21
+msgid "%n mention found"
+msgid_plural "%n mentions found"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/boilerplate-classes/api.php:54
+msgid "Use the action hook \"%s\" instead."
+msgstr ""
+
+#: includes/boilerplate-classes/api.php:54
+#: includes/boilerplate-classes/api.php:93
+msgid "%1$s of %2$s"
+msgstr ""
+
+#: includes/boilerplate-classes/api.php:93
+msgid "Use the filter \"%s\" instead."
+msgstr ""
+
+#: templates/donate.php:11
 msgid "Support"
 msgstr ""
 
-#: tmac.php:600
+#: templates/donate.php:14
 msgid ""
-"Enjoy using Twitter Mentions as Comments? Please consider <a href=\"http://"
-"ben.balter.com/donate/\">making a small donation</a> to support the "
-"software’s continued development."
+"Enjoy using %1$s? Please consider <a href=\"%2$s\">making a small donation</"
+"a> to support the software's continued development."
 msgstr ""
 
-#: tmac.php:600
+#: templates/donate.php:15
 msgid "hide this message"
 msgstr ""
 
-#: tmac.php:608
+#: templates/forced-refresh.php:2
+msgid "Tweets Refreshed!"
+msgstr ""
+
+#: templates/forced-refresh.php:4
+msgid "No Tweets found."
+msgstr ""
+
+#: templates/forced-refresh.php:6
+msgid "<strong>%d</strong> tweet found."
+msgid_plural "<strong>%d</strong> tweets found."
+msgstr[0] ""
+msgstr[1] ""
+
+#: templates/options.php:2
+msgid "Twitter Mentions as Comments Options"
+msgstr ""
+
+#: templates/options.php:9
+msgid "Exclude ReTweets?"
+msgstr ""
+
+#: templates/options.php:11
+msgid "Include ReTweets"
+msgstr ""
+
+#: templates/options.php:12
+msgid "Exclude ReTweets"
+msgstr ""
+
+#: templates/options.php:13
+msgid ""
+"If \"Exclude ReTweets\" is selected, ReTweets (both old- and new-style) will "
+"be ignored."
+msgstr ""
+
+#: templates/options.php:17
+msgid "Number of Posts to Check"
+msgstr ""
+
+#: templates/options.php:19
+msgid "most recent posts for mentions"
+msgstr ""
+
+#: templates/options.php:20
+msgid ""
+"If set to \"-1\", will check all posts, if blank will check all posts on "
+"your site's front page."
+msgstr ""
+
+#: templates/options.php:24
+msgid "Comment Type"
+msgstr ""
+
+#: templates/options.php:27
+msgid "Comment"
+msgstr ""
+
+#: templates/options.php:28
+msgid "Trackback"
+msgstr ""
+
+#: templates/options.php:29
+msgid "Pingback"
+msgstr ""
+
+#: templates/options.php:31
+msgid ""
+"Most users will probably not need to change this setting, although you may "
+"prefer that Tweets appear as trackbacks or pingbacks if your theme displays "
+"these differently"
+msgstr ""
+
+#: templates/options.php:35
+msgid "Checking Frequency"
+msgstr ""
+
+#: templates/options.php:37
+msgid "Hourly"
+msgstr ""
+
+#: templates/options.php:38
+msgid "Manually"
+msgstr ""
+
+#: templates/options.php:39
+msgid ""
+"The plugin can check for Tweets hourly (default), or, if you have the "
+"ability to set up a <a href=\"http://en.wikipedia.org/wiki/Cron\">cron job</"
+"a>, can check any any desired frequency."
+msgstr ""
+
+#: templates/options.php:40
+msgid ""
+"For manual checking, you must set a crontab to execute the file <code>%s/"
+"cron.php</code>. The exact command will depend on your server's setup. To "
+"run every 15 minutes, for example (in most setups), the command would be: "
+"<code>/15 * * * * php %s/cron.php</code> Please be aware that Twitter does "
+"have some <a href=\"http://dev.twitter.com/pages/rate-limiting\">API limits</"
+"a>. The plugin will make one search call per post, and one users/show call "
+"for each new user it finds (to get the user's real name)."
+msgstr ""
+
+#: templates/options.php:46
+msgid "Check for New Tweets Now"
+msgstr ""
+
+#: templates/options.php:47
+msgid ""
+"Normally the plugin checks for new Tweets on its own. Click the link above "
+"to force a check immediately."
+msgstr ""
+
+#: templates/options.php:53
 msgid "Save Changes"
+msgstr ""
+
+#: templates/upgrade-wp.php:7
+msgid ""
+"%s requires WordPress version %s or greater. Please disable the plugin or "
+"upgrade your WordPress install."
+msgstr ""
+
+#. Plugin Name of the plugin/theme
+msgid "Twitter Mentions as Comments"
+msgstr ""
+
+#. Plugin URI of the plugin/theme
+msgid "http://ben.balter.com/2010/11/29/twitter-mentions-as-comments/"
+msgstr ""
+
+#. Description of the plugin/theme
+msgid "Queries the Twitter API on a regular basis for tweets about your posts."
+msgstr ""
+
+#. Author of the plugin/theme
+msgid "Benjamin J. Balter"
+msgstr ""
+
+#. Author URI of the plugin/theme
+msgid "http://ben.balter.com"
 msgstr ""
