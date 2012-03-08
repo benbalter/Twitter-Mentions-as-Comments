@@ -43,7 +43,7 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_1 {
 	//plugin boilerplate settings
 	static $instance;
 	public $name      = 'Twitter Mentions as Comments';
-	public $slug      = 'twitter-menttions-as-comments';
+	public $slug      = 'twitter-mentions-as-comments';
 	public $slug_     = 'twitter_mentions_as_comments';
 	public $prefix    = 'tmac_';
 	public $directory = null;
