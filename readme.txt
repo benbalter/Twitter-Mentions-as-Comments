@@ -58,6 +58,7 @@ Yes. Because Tweets go through WordPress's built-in comment moderation system, i
 = 1.5.1 =
 * Added Spanish translation support, special thanks to [Eduardo Larequi](http://www.labitacoradeltigre.com/).
 * Better translation support.
+* Fix for `invalid argument supplied foreach()` error on some installs.
 
 = 1.5 =
 * Codebase completely rewritten with performance, stability, customizability, and documentation improvements
