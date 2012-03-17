@@ -1,0 +1,168 @@
+# Copyright (C) 2010 
+# This file is distributed under the same license as the  package.
+msgid ""
+msgstr ""
+"Project-Id-Version: Twitter Mentions as Comments en español\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2012-03-08 20:32+0100\n"
+"PO-Revision-Date: 2012-03-08 20:40+0100\n"
+"Last-Translator: Eduardo Larequi <elarequi@gmail.com>\n"
+"Language-Team: Eduardo Larequi <elarequi@gmail.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-Language: Spanish\n"
+"X-Poedit-Country: Spain\n"
+"X-Poedit-KeywordsList: __;_e;_n:1,2;_x;_c\n"
+"X-Poedit-Basepath: ..\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: cron.php:21
+msgid "%n mention found"
+msgid_plural "%n mentions found"
+msgstr[0] "Se ha encontrado %n mención."
+msgstr[1] "Se han encontrado %n menciones."
+
+#: includes/boilerplate-classes/api.php:54
+#, php-format
+msgid "Use the action hook \"%s\" instead."
+msgstr "Utilizar en su lugar el action hook \"%s\"."
+
+#: includes/boilerplate-classes/api.php:54
+#: includes/boilerplate-classes/api.php:93
+#, php-format
+msgid "%1$s of %2$s"
+msgstr "%1$s de %2$s"
+
+#: includes/boilerplate-classes/api.php:93
+#, php-format
+msgid "Use the filter \"%s\" instead."
+msgstr "Utilizar el su lugar el filtro \"%s\"."
+
+#: templates/donate.php:11
+msgid "Support"
+msgstr "Apoya el plugin"
+
+#: templates/donate.php:14
+#, php-format
+msgid "Enjoy using %1$s? Please consider <a href=\"%2$s\">making a small donation</a> to support the software's continued development."
+msgstr "¿Has disfrutado con %1$s? Por favor, considera la posibilidad de hacer <a href=\"%2$s\">una pequeña donación</a> para apoyar el desarrollo de este plugin."
+
+#: templates/donate.php:15
+msgid "hide this message"
+msgstr "ocultar este mensaje"
+
+#: templates/forced-refresh.php:2
+msgid "Tweets Refreshed!"
+msgstr "Los tweets se han refrescado."
+
+#: templates/forced-refresh.php:4
+msgid "No Tweets found."
+msgstr "No se ha encontrado ningún tweet."
+
+#: templates/forced-refresh.php:6
+#, php-format
+msgid "<strong>%d</strong> tweet found."
+msgid_plural "<strong>%d</strong> tweets found."
+msgstr[0] "Se ha encontrado <strong>%d</strong> tweet."
+msgstr[1] "Se han encontrado <strong>%d</strong> tweets."
+
+#: templates/options.php:2
+msgid "Twitter Mentions as Comments Options"
+msgstr "Opciones del plugin Twitter Mentions as Comments"
+
+#: templates/options.php:9
+msgid "Exclude ReTweets?"
+msgstr "¿Excluir retweets?"
+
+#: templates/options.php:11
+msgid "Include ReTweets"
+msgstr "Incluir retweets"
+
+#: templates/options.php:12
+msgid "Exclude ReTweets"
+msgstr "Excluir retweets"
+
+#: templates/options.php:13
+msgid "If \"Exclude ReTweets\" is selected, ReTweets (both old- and new-style) will be ignored."
+msgstr "Si seleccionas la opción \"Excluir retweets\", todos los retweets (tanto los del nuevo estilo como los del viejo) serán ignorados."
+
+#: templates/options.php:17
+msgid "Number of Posts to Check"
+msgstr "Número de entradas para comprobar"
+
+#: templates/options.php:19
+msgid "Check the"
+msgstr "Comprobar las"
+
+#: templates/options.php:19
+msgid "most recent posts for mentions"
+msgstr "entradas más recientes, en busca de menciones"
+
+#: templates/options.php:20
+msgid "If set to \"-1\", will check all posts, if blank will check all posts on your site's front page."
+msgstr "Si configuras esta opción con el valor \"-1\", se examinarán todas las entradas; si dejas el campo en blanco, solo se examinarán las entradas de la página de inicio de tu sitio."
+
+#: templates/options.php:24
+msgid "Comment Type"
+msgstr "Tipo de comentario"
+
+#: templates/options.php:27
+msgid "Comment"
+msgstr "Comentario"
+
+#: templates/options.php:28
+msgid "Trackback"
+msgstr "Trackback"
+
+#: templates/options.php:29
+msgid "Pingback"
+msgstr "Pingback"
+
+#: templates/options.php:31
+msgid "Most users will probably not need to change this setting, although you may prefer that Tweets appear as trackbacks or pingbacks if your theme displays these differently"
+msgstr "La mayoría de los usuarios no tienen por qué modificar esta configuración, aunque tal vez prefieras que los tweets aparezcan como trackbacks o pingbacks, en caso de que tu tema los muestre de forma diferente."
+
+#: templates/options.php:35
+msgid "Checking Frequency"
+msgstr "Comprobación de la frecuencia"
+
+#: templates/options.php:37
+msgid "Hourly"
+msgstr "Cada hora"
+
+#: templates/options.php:38
+msgid "Manually"
+msgstr "Manualmente"
+
+#: templates/options.php:39
+msgid "The plugin can check for Tweets hourly (default), or, if you have the ability to set up a <a href=\"http://en.wikipedia.org/wiki/Cron\">cron job</a>, can check any any desired frequency."
+msgstr "Por defecto, el plugin comprueba los tweets cada hora; si tienes la posibilidad de configurar una <a href=\"http://en.wikipedia.org/wiki/Cron\">tarea programada (cron job)</a>, puedes definir la frecuencia que desees."
+
+#: templates/options.php:40
+#, php-format
+msgid "For manual checking, you must set a crontab to execute the file <code>%s/cron.php</code>. The exact command will depend on your server's setup. To run every 15 minutes, for example (in most setups), the command would be: <code>/15 * * * * php %s/cron.php</code> Please be aware that Twitter does have some <a href=\"http://dev.twitter.com/pages/rate-limiting\">API limits</a>. The plugin will make one search call per post, and one users/show call for each new user it finds (to get the user's real name)."
+msgstr "Para una comprobación manual, debes definir una tarea programada que ejecute el fichero <code>%s/cron.php</code>. El comando exacto dependerá de la configuración de tu servidor. Por ejemplo, para ejecutar dicha tarea cada 15 minutos en la mayor parte de las configuraciones, el comando será: <code>/15 * * * * php %s/cron.php</code>. Debes tener en cuenta que Twitter tiene algunas <a href=\"http://dev.twitter.com/pages/rate-limiting\">limitaciones en su API</a>. El plugin realizará una llamada de búsqueda por cada artículo, y una llamada de usuario por cada nuevo usuario que encuentre (para localizar su nombre real)."
+
+#: templates/options.php:44
+msgid "Force Check"
+msgstr "Forzar comprobación"
+
+#: templates/options.php:46
+msgid "Check for New Tweets Now"
+msgstr "Comprobar los nuevos tweets ahora"
+
+#: templates/options.php:47
+msgid "Normally the plugin checks for new Tweets on its own. Click the link above to force a check immediately."
+msgstr "Normalmente el plugin comprueba por sí mismo si existen nuevos tweets. Haz clic en el enlace que tienes arriba para forzar a que la comprobación se realice ahora mismo."
+
+#: templates/options.php:53
+msgid "Save Changes"
+msgstr "Guardar cambios"
+
+#: templates/upgrade-wp.php:7
+#, php-format
+msgid "%s requires WordPress version %s or greater. Please disable the plugin or upgrade your WordPress install."
+msgstr "%s requiere la versión %s (o superior) de WordPress. Por favor, desactiva el plugin o actualiza tu instalación de WordPress."
+
