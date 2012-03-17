@@ -16,7 +16,7 @@
 			<tr valign="top">
 				<th scope="row"><label for="<?php echo  $this->parent->slug_; ?>[posts_per_check]"><?php _e( 'Number of Posts to Check', 'twitter-mentions-as-comments' ); ?></label></th>
 				<td>
-					Check the <input type="text" name="<?php echo  $this->parent->slug_; ?>[posts_per_check]" id="<?php echo  $this->parent->slug_; ?>[posts_per_check]" value="<?php echo $this->parent->options->posts_per_check; ?>" size="2"> <?php _e( 'most recent posts for mentions', 'twitter-mentions-as-comments' ); ?><br />
+					<?php printf( __( 'Check the %s most recent posts for mentions', 'twitter-mentions-as-comments' ), '<input type="text" name="' . $this->parent->slug_ . '[posts_per_check]" id="' . $this->parent->slug_ . '[posts_per_check]" value="' . $this->parent->options->posts_per_check . '" size="2">' ) ; ?><br />
 					<span class="description"><?php _e( 'If set to "-1", will check all posts, if blank will check all posts on your site\'s front page.', 'twitter-mentions-as-comments' ); ?></span>
 				</td>
 			</tr>		
@@ -41,7 +41,7 @@
 				</td>
 			</tr>
 			<tr valign="top">
-				<th scope="row">Force Check</th>
+				<th scope="row"><?php _e( 'Force Check', 'twitter-mentions-as-comments' ); ?></th>
 				<td>
 					<a href="<?php echo esc_url( add_query_arg( 'force_refresh', true ) ); ?>"><?php _e( 'Check for New Tweets Now', 'twitter-mentions-as-comments' ); ?></a><br />
 					<span class="description"><?php _e( 'Normally the plugin checks for new Tweets on its own. Click the link above to force a check immediately.', 'twitter-mentions-as-comments' ); ?></span>

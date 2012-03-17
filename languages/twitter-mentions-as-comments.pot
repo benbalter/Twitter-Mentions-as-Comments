@@ -2,9 +2,9 @@
 # This file is distributed under the same license as the Twitter Mentions as Comments package.
 msgid ""
 msgstr ""
-"Project-Id-Version: Twitter Mentions as Comments 1.5\n"
+"Project-Id-Version: Twitter Mentions as Comments 1.5.1\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/tag/twitter-mentions-as-comments\n"
-"POT-Creation-Date: 2012-03-07 16:35:52+00:00\n"
+"POT-Creation-Date: 2012-03-17 18:10:48+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -86,7 +86,7 @@ msgid "Number of Posts to Check"
 msgstr ""
 
 #: templates/options.php:19
-msgid "most recent posts for mentions"
+msgid "Check the %s most recent posts for mentions"
 msgstr ""
 
 #: templates/options.php:20
@@ -146,6 +146,10 @@ msgid ""
 "have some <a href=\"http://dev.twitter.com/pages/rate-limiting\">API limits</"
 "a>. The plugin will make one search call per post, and one users/show call "
 "for each new user it finds (to get the user's real name)."
+msgstr ""
+
+#: templates/options.php:44
+msgid "Force Check"
 msgstr ""
 
 #: templates/options.php:46
