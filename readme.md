@@ -1,7 +1,7 @@
 # Twitter Mentions as Comments #
 **Contributors:** benbalter  
-**Donate link:** [http://ben.balter.com/donate/](http://ben.balter.com/donate/?utm_source=wp&utm_medium=gh_plugin_page&utm_campaign=tmac)  
-**Tags:** comments, twitter, mentions, social, social media 
+**Donate link:** http://ben.balter.com/donate/?utm_source=wp&utm_medium=org_plugin_page&utm_campaign=tmac  
+**Tags:** comments, twitter, mentions, social, social media  
 **Requires at least:** 3.0  
 **Tested up to:** 3.2  
 **Stable tag:** 1.5  
@@ -55,6 +55,12 @@ Yes. Because Tweets go through WordPress's built-in comment moderation system, i
 
 ## Changelog ##
 
+### 1.5.1 ###
+* Added Spanish translation support, special thanks to [Eduardo Larequi](http://www.labitacoradeltigre.com/).
+* Better translation support.
+* Fix for `invalid argument supplied foreach()` error on some installs.
+* Fix for hourly cron not always firing on some installs.
+
 ### 1.5 ###
 * Codebase completely rewritten with performance, stability, customizability, and documentation improvements
 * Additional API hooks added for developers to further customize plugin's functionality
@@ -63,7 +69,7 @@ Yes. Because Tweets go through WordPress's built-in comment moderation system, i
 * GPL license now distributed with plugin
 
 ### 1.0.4 ###
-* **NOTE: you must manually reactivate the plugin after upgrading to this version**  
+*** **NOTE:** you must manually reactivate the plugin after upgrading to this version**  
 * Fix for bug where the name of authors with previous tweets would display the twitter username multiple times
 * Changed name of primary plugin file to conform to traditional plugin format
 
