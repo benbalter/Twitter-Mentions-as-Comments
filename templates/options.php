@@ -16,7 +16,7 @@
 			<tr valign="top">
 				<th scope="row"><label for="<?php echo  $this->parent->slug_; ?>[posts_per_check]"><?php _e( 'Number of Posts to Check', 'twitter-mentions-as-comments' ); ?></label></th>
 				<td>
-					<?php sprintf( __( 'Check the %s most recent posts for mentions', 'twitter-mentions-as-comments' ), '<input type="text" name="' . $this->parent->slug_ . '[posts_per_check]" id="' . $this->parent->slug_ . '[posts_per_check]" value="' . $this->parent->options->posts_per_check; . '" size="2">' ); ?><br />
+					<?php printf( __( 'Check the %s most recent posts for mentions', 'twitter-mentions-as-comments' ), '<input type="text" name="' . $this->parent->slug_ . '[posts_per_check]" id="' . $this->parent->slug_ . '[posts_per_check]" value="' . $this->parent->options->posts_per_check . '" size="2">' ) ; ?><br />
 					<span class="description"><?php _e( 'If set to "-1", will check all posts, if blank will check all posts on your site\'s front page.', 'twitter-mentions-as-comments' ); ?></span>
 				</td>
 			</tr>		
