@@ -69,7 +69,8 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_1 {
 
 		//avatars
 		add_filter( 'get_avatar', array( &$this, 'filter_avatar' ), 10, 2  );
-
+		
+		//init options
 		add_action( 'tmac_options_init', array( &$this, 'options_init' ) );
 
 	}
@@ -80,7 +81,8 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_1 {
 	 */
 	function options_init() {
 
-		$this->options->defaults = array(  'comment_type' => '',
+		$this->options->defaults = array(  
+			'comment_type'    => '',
 			'posts_per_check' => -1,
 			'hide-donate'     => false,
 			'api_call_limit'  => 150,
@@ -164,10 +166,8 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_1 {
 		foreach ( $mentions->results as $tweet ) {
 
 			//If they exclude RTs, look for "RT" and skip if needed
-			if ( $this->options->RTs ) {
-				if ( substr( $tweet->text, 0, 2 ) == 'RT' )
-					continue;
-			}
+			if ( $this->options->RTs && substr( $tweet->text, 0, 2 ) == 'RT' )
+				continue;
 
 			//Format the author's name based on cache or call API if necessary
 			$author = $this->build_author_name( $tweet->from_user );
@@ -179,7 +179,7 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_1 {
 				'comment_author_email' => $tweet->from_user . '@twitter.com',
 				'comment_author_url'   => 'http://twitter.com/' . $tweet->from_user . '/status/' . $tweet->id_str . '/',
 				'comment_content'      => $tweet->text,
-				'comment_date_gmt'     => date('Y-m-d H:i:s', strtotime($tweet->created_at) ),
+				'comment_date_gmt'     => date('Y-m-d H:i:s', strtotime( $tweet->created_at ) ),
 				'comment_type'         => $this->options->comment_type
 			);
 
@@ -197,7 +197,7 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_1 {
 		}
 
 		//If we found a mention, update the last_Id post meta
-		update_post_meta($postID, 'tmac_last_id', $mentions->max_id_str );
+		update_post_meta( $postID, 'tmac_last_id', $mentions->max_id_str );
 
 		//return number of mentions found
 		return sizeof( $mentions->results );
@@ -217,7 +217,7 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_1 {
 		$this->calls->count = $this->options->api_call_counter;
 
 		//Get all posts
-		$posts = get_posts('numberposts=' . $this->options->posts_per_check );
+		$posts = get_posts( 'numberposts=' . $this->options->posts_per_check );
 		$posts = $this->api->apply_filters( 'mentions_check_posts', $posts );
 
 		//Loop through each post and check for new mentions

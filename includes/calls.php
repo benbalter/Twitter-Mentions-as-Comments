@@ -81,8 +81,8 @@ class Twitter_Mentions_As_Comments_Calls {
 		//Check to see if twitter user has previously commented, if so just grab their name
 		$name = $wpdb->get_var( $wpdb->prepare( "SELECT comment_author FROM $wpdb->comments WHERE comment_author_email = %s and comment_approved = '1' LIMIT 1", $twitterID . '@twitter.com' ) );
 
-		//if they do not previosly have a comment, or that comment doesn't have a real name, call the Twitter API
-		if ( empty( $name ) || substr( $name, 0, 1 ) == '@' ) {
+		//if they do not previosly have a comment, call the Twitter API
+		if ( empty( $name ) ) {
 
 			//Query the API
 			$data = $this->query_twitter( $twitterID );
