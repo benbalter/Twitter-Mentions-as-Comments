@@ -369,7 +369,7 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_1 {
 		$real_name = $this->calls->get_author_name( $twitterID );
 
 		//If we don't have a real name, just use their twitter handle
-		if ( !$real_name )
+		if ( !$real_name || substr( $real_name, 0, 1 ) == '@' )
 			$name = '@' . $twitterID;
 
 		//if we have their real name, build a pretty name
