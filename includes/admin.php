@@ -21,7 +21,7 @@ class Twitter_Mentions_As_Comments_Admin {
 
 		add_action( 'admin_menu', array( &$this, 'options_menu_init' ) );
 
-		add_action( 'tmac_enqueue_init', array( &$this, 'enqueue_init' ) );
+		add_action( 'admin_init', array( &$this, 'enqueue_init' ) );
 
 		add_filter( 'tmac_options_validate', array( &$this, 'options_validate' ) );
 
@@ -31,7 +31,7 @@ class Twitter_Mentions_As_Comments_Admin {
 	/**
 	 * Register enqueue data
 	 */
-	function enqueue_init() {
+	function enqueue_init() { 
 		$this->parent->enqueue->data = array ( 'hide_manual_cron_details' => !( $this->parent->options->manual_cron ) );
 	}
 

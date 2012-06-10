@@ -8,6 +8,7 @@ class Twitter_Mentions_As_Comments_Calls {
 
 	private $parent;
 	public $count;
+	public $image_ttl = '86400'; // 24 hours
 
 	/**
 	 * Store parent on construct
@@ -108,38 +109,46 @@ class Twitter_Mentions_As_Comments_Calls {
 
 
 	/**
-	 * Retrieves twitter profile image given a twitter username, stores in comment meta
+	 * Retrieves twitter profile image given a twitter username using TLC-Transients
 	 * @param string twitterID twitter handle to lookup
 	 * @param int comment_id ID of comment to store meta on (for caching)
 	 * @since .1a
-	 * @param unknown $twitterID
-	 * @param unknown $comment_id
+	 * @param string $twitterID the user's name
+	 * @param int $comment_id DEPRICATED
 	 * @returns string url of profile image
 	 */
-	function get_profile_image( $twitterID, $comment_id) {
+	function get_profile_image( $twitterID, $comment_id = null ) {
+	
+		if ( $comment_id != null )
+			_doing_it_wrong( 'get_profile_image', 'Passing the comment ID is deprecated as of Twitter Mentions as Comments version', '1.5.2' );
 
 		if ( $image = $this->parent->cache->get( $twitterID . '_profile_image' ) )
 			return $image;
-
-		//Check to see if we already have the image stored in comment meta
-		$image = get_comment_meta($comment_id, 'tmac_image', true);
-
-		//If we don't already have the immage, call the twitter API
-		if (!$image) {
-
-			$data = $this->query_twitter( $twitterID );
-			$image = $data->profile_image_url;
-
-			//Cache the image URL
-			add_comment_meta($comment_id, 'tmac_image', $image, true);
-
-		}
-
-		$image = $this->parent->api->apply_filters( 'user_image', $image, $twitterID, $comment_id );
-
-		$this->parent->cache->set( $twitterID . '_profile_image', $image );
+			
+		$image = $tlc_transient( 'tmac_image_' . $twitterID  )
+		    ->updates_with( array( &$this, 'get_profile_image_callback' ), $twitterID )
+		    ->expires_in( $this->image_ttl )
+		    ->background_only()
+		    ->get();
+		    
+		if ( $image )
+			$this->parent->cache->set( $twitterID . '_profile_image', $image );
 
 		return $image;
+	}
+	
+	/**
+	 * Callback to query the Twitter API to retrieve a user's profile image
+	 * @param string $twitterID the user's name
+	 * @return string the URL to the image
+	 */
+	function get_profile_image_callback( $twitterID ) {
+		
+		$data = $this->query_twitter( $twitterID );
+		$image = $data->profile_image_url;
+		$image = $this->parent->api->apply_filters( 'user_image', $image, $twitterID, $comment_id );
+		return $image;
+	
 	}
 
 

@@ -37,6 +37,7 @@ License: GPL2
  */
 
 require_once dirname( __FILE__ ) . '/includes/class.plugin-boilerplate.php';
+require_once dirname( __FILE__ ) . '/includes/tlc-transients/tlc-transients.php';
 
 class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_1 {
 
@@ -192,8 +193,8 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_1 {
 			if ( !empty( $commentdata ) )
 				$comment_id = $this->new_comment( $commentdata );
 
-			//Cache the user's profile image
-			add_comment_meta($comment_id, 'tmac_image', $tweet->profile_image_url, true);
+			//Prime profile image cache
+			$this->calls->get_profile_image( $tweet->from_user );
 
 			$this->api->do_action( 'insert_mention', $comment_id, $commentdata );
 
@@ -266,6 +267,13 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_1 {
 		if ( $from < '1.5' ) {
 			$this->options->set_options ( get_option( 'tmac_options' ) );
 			delete_option( 'tmac_options' );
+		}
+		
+		//remove tmac image cache from comment_meta table
+		if ( $from < '1.5.2' ) {
+			global $wpdb;
+			$wpdb->query( "DELETE FROM $wpdb->comment_meta WHERE meta_key LIKE 'tmac_image'" );
+			
 		}
 
 	}
@@ -411,7 +419,11 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_1 {
 			return $avatar;
 
 		//get the url of the image
-		$url = $this->calls->get_profile_image ( substr( $data->comment_author, 1 ), $data->comment_ID);
+		$url = $this->calls->get_profile_image ( substr( $data->comment_author, 1 ) );
+
+		//call failed
+		if ( !$url )
+			return $avatar;
 
 		//replace the twitter image with the default avatar and return
 		return preg_replace("/http:\/\/([^']*)/", $url, $avatar);
