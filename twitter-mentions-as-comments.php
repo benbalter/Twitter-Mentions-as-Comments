@@ -63,7 +63,10 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_1 {
 
 		//Kill cron on deactivation
 		register_deactivation_hook( __FILE__, array( &$this, 'deactivation' ) );
-
+		
+		//schedule cron
+		add_action( 'admin_init', array( &$this, 'maybe_schedule_cron' ) );
+		
 		//float bug fix
 		add_filter( 'tmac_lastID', array( &$this, 'lastID_float_fix'), 10, 2 );
 
@@ -259,9 +262,6 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_1 {
 	 */
 	function upgrade( $from, $to ) {
 
-	if ( !wp_next_scheduled( 'tmac_hourly_check' ) )
-		wp_schedule_event( time(), 'hourly', 'tmac_hourly_check' );
-
 		//change option name pre-1.5
 		if ( $from < '1.5' ) {
 			$this->options->set_options ( get_option( 'tmac_options' ) );
@@ -270,6 +270,20 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_1 {
 
 	}
 
+	/**
+	 * Check on admin_init to ensure our event is scheduled, if not, schedule
+	 * Doing on Upgrade requires that we bump versions (so would not work if deactivated then reactivated)
+	 * Doing on activation doesn't fire on upgrade.
+	 * Hence, we check on admin init
+	 */
+	function maybe_schedule_cron() {
+	
+		if ( wp_next_scheduled( 'tmac_hourly_check' ) )
+			return;
+			
+		wp_schedule_event( time(), 'hourly', 'tmac_hourly_check' );
+	
+	}
 
 	/**
 	 * Callback to remove cron job
