@@ -418,8 +418,10 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_1 {
 		if ( !isset( $data->comment_agent ) || $data->comment_agent != $this->name )
 			return $avatar;
 
+		$author = str_replace( '@twitter.com', '', $data->comment_author_email );
+
 		//get the url of the image
-		$url = $this->calls->get_profile_image ( substr( $data->comment_author, 1 ) );
+		$url = $this->calls->get_profile_image ( $author );
 
 		//call failed
 		if ( !$url )

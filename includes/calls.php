@@ -121,20 +121,18 @@ class Twitter_Mentions_As_Comments_Calls {
 	
 		if ( $comment_id != null )
 			_doing_it_wrong( 'get_profile_image', 'Passing the comment ID is deprecated as of Twitter Mentions as Comments version', '1.5.2' );
-
-		if ( $image = $this->parent->cache->get( $twitterID . '_profile_image' ) )
-			return $image;
+		
+		//render the name case incensitive
+		$twitterID = strtolower( $twitterID );
 			
-		$image = $tlc_transient( 'tmac_image_' . $twitterID  )
-		    ->updates_with( array( &$this, 'get_profile_image_callback' ), $twitterID )
+		$image = tlc_transient( 'tmac_image_' . $twitterID  )
+		    ->updates_with( array( &$this, 'get_profile_image_callback' ), array( $twitterID ) )
 		    ->expires_in( $this->image_ttl )
 		    ->background_only()
 		    ->get();
-		    
-		if ( $image )
-			$this->parent->cache->set( $twitterID . '_profile_image', $image );
 
 		return $image;
+	
 	}
 	
 	/**
@@ -143,10 +141,10 @@ class Twitter_Mentions_As_Comments_Calls {
 	 * @return string the URL to the image
 	 */
 	function get_profile_image_callback( $twitterID ) {
-		
+
 		$data = $this->query_twitter( $twitterID );
 		$image = $data->profile_image_url;
-		$image = $this->parent->api->apply_filters( 'user_image', $image, $twitterID, $comment_id );
+		$image = $this->parent->api->apply_filters( 'user_image', $image, $twitterID, null );
 		return $image;
 	
 	}
@@ -166,7 +164,7 @@ class Twitter_Mentions_As_Comments_Calls {
 		$lastID = $this->parent->get_lastID( $postID );
 
 		//Build URL, verify that $lastID is a string and not scientific notation, see http://jetlogs.org/2008/02/05/php-problems-with-big-integers-and-scientific-notation/
-		$url = 'http://search.twitter.com/search.json?rpp=100&since_id=' . $lastID . '&q=' . urlencode( get_permalink( $postID ) ) . '%20OR%20' . urlencode( get_bloginfo( 'wpurl' ) . '/?p=' . $postID );
+		$url = 'http://search.twitter.com/search.json?rpp=100&since_id=' . $lastID . '&q=' . urlencode( get_permalink( $postID ) );
 
 		$url = $this->parent->api->apply_filters( 'query_url', $url, $postID );
 
