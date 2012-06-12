@@ -8,7 +8,7 @@ class Twitter_Mentions_As_Comments_Calls {
 
 	private $parent;
 	public $count;
-	public $image_ttl = '86400'; // 24 hours
+	public $user_ttl = '604800'; // 1 week in seconds
 
 	/**
 	 * Store parent on construct
@@ -72,36 +72,15 @@ class Twitter_Mentions_As_Comments_Calls {
 	 * @param string $twitterID handle of twitter user
 	 * @returns string their real name
 	 */
-	function get_author_name( $twitterID ) {
+	function get_author_name( $twitterID, $force = false ) {
 
-		global $wpdb;
-
-		if ( $name = $this->parent->cache->get( $twitterID . '_name' ) )
-			return $name;
-
-		//Check to see if twitter user has previously commented, if so just grab their name
-		$name = $wpdb->get_var( $wpdb->prepare( "SELECT comment_author FROM $wpdb->comments WHERE comment_author_email = %s and comment_approved = '1' LIMIT 1", $twitterID . '@twitter.com' ) );
-
-		//if they do not previosly have a comment, call the Twitter API
-		if ( empty( $name ) ) {
-
-			//Query the API
-			$data = $this->query_twitter( $twitterID );
-
-			//If we hit the API limit, kick
-			if ( !$data )
-				return false;
-
-			$name = $data->name;
-
-		}
+		$user = $this->get_user_object( $twitterID, $force );
+		$name = $user->name;   
 
 		//Because our query will return the name in the form of REAL NAME (@Handle), split the string at "(@"
 		$name = substr( $name, strrpos( $name, '(@' ) );
 
 		$name = $this->parent->api->apply_filters( 'author_name', $name, $twitterID );
-
-		$this->parent->cache->set( $twitterID . '_name', $name );
 
 		return $name;
 
@@ -117,38 +96,122 @@ class Twitter_Mentions_As_Comments_Calls {
 	 * @param int $comment_id DEPRICATED
 	 * @returns string url of profile image
 	 */
-	function get_profile_image( $twitterID, $comment_id = null ) {
+	function get_profile_image( $twitterID, $comment_id = null, $force = false ) {
 	
 		if ( $comment_id != null )
 			_doing_it_wrong( 'get_profile_image', 'Passing the comment ID is deprecated as of Twitter Mentions as Comments version', '1.5.2' );
-		
-		//render the name case incensitive
-		$twitterID = strtolower( $twitterID );
 			
-		$image = tlc_transient( 'tmac_image_' . $twitterID  )
-		    ->updates_with( array( &$this, 'get_profile_image_callback' ), array( $twitterID ) )
-		    ->expires_in( $this->image_ttl )
-		    ->background_only()
-		    ->get();
+		$user = $this->get_user_object( $twitterID, $force );
+		
+		$image = $user ? $user->profile_image_url : false;
+		$this->parent->api->apply_filters( 'user_image', $image, $twitterID, null );
 
 		return $image;
 	
 	}
 	
 	/**
-	 * Callback to query the Twitter API to retrieve a user's profile image
-	 * @param string $twitterID the user's name
-	 * @return string the URL to the image
+	 * Returns a user object for the specified user
+	 * @param string $twitterID the user screen name to retrieve object for
+	 * @param bool $force (optional) whether to force a live fetch (defaults to false)
+	 * @return object the user object
 	 */
-	function get_profile_image_callback( $twitterID ) {
+	function get_user_object( $twitterID, $force = false ) {
 
-		$data = $this->query_twitter( $twitterID );
-		$image = $data->profile_image_url;
-		$image = $this->parent->api->apply_filters( 'user_image', $image, $twitterID, null );
-		return $image;
+		//render the name case incensitive
+		$twitterID = strtolower( $twitterID );
+		
+		$trans = tlc_transient( 'tmac_user_' . $twitterID  )
+		    ->updates_with( array( &$this, 'get_user_object_callback' ), array( $twitterID ) )
+		    ->expires_in( $this->user_ttl );
+		    
+		if ( !$force )
+			$trans->background_only();
+		
+		return $trans->get();
+		    
+	}
+	
+	/**
+	 * Callback used by tlc_transient_server to query twitter API for user objects
+	 * @param string $twitterID the user to query
+	 * @returns object the twitter user object
+	 */
+	function get_user_object_callback( $twitterID ) {
+		global $wpdb;
+		
+		//loop through all queued screen_names to check, and do one (or possibly a few) API calls to refresh ALL of them
+		$this->fetch_all_queued_user_objects();
+		
+		//have tlc_transient create the key for consistency
+		$trans = tlc_transient( 'tmac_user_' . $twitterID );
+		$data = get_transient( $trans->key );
+		
+		//ruh roh
+		if ( !$data )
+			return false;
+			
+		//was just refreshed, no need to check
+		return $data[1];
 	
 	}
+	
+	/**
+	 * In order to save API calls, loop through all queued requests for user objects 
+	 * and group into requests of 100, manually setting transients for each in a format
+	 * compatible with tlc_transients()
+	 */
+	function fetch_all_queued_user_objects() {
+		
+		global $wpdb;
+		
+		//fields to cache
+		$fields = array( 'profile_image_url', 'name' );
+		
+		//build array of all pending user object queries
+		$base = '_transient_tlc_up__tmac_user_';
+		$user_queue = $wpdb->get_col( "SELECT option_name from $wpdb->options WHERE option_name like '$base%'" );
+	
+		//strip transient base to get screen name alone
+		foreach ( $user_queue as &$user )
+			$user = str_replace( $base, '', $user );
+		
+		//api accepts max 100 screen_names per call, so chunk
+		foreach ( array_chunk( $user_queue, 100 ) as $chunk ) {
+			$user_string = implode(',', $chunk );
+	
+			//build query URL
+			$url = add_query_arg( 'screen_name', $user_string, 'http://api.twitter.com/1/users/lookup.json' );
+			$data = wp_remote_get( $url );
+			
+			if ( is_wp_error( $data ) )
+				throw new Exception( $data->get_error_message() );
+			
+			$data = json_decode( wp_remote_retrieve_body( $data ) );
+			
+			if ( !$data )
+				throw new Exception( 'Could not parse JSON repsonse' );
+			
+			//loop through each user and build a cache object
+			foreach ( $data as $user_object ) {
 
+				//only cache certain fields to save space in database
+				$cache = new stdClass();
+				foreach ( $fields as $field )
+					$cache->$field = $user_object->$field;	
+				
+				//store the cache via tlc_transient
+				$trans = tlc_transient( 'tmac_user_' . strtolower( $user_object->screen_name ) )
+				    ->expires_in( $this->user_ttl )
+					->set( $cache );
+					
+				//manually kill lock since it's a private function
+				delete_transient( 'tlc_up__' . $trans->key );
+				
+			}
+		}
+		
+	}
 
 	/**
 	 * Calls the Twitter API and gets mentions for a given post

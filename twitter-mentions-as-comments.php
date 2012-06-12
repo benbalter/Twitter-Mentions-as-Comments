@@ -174,7 +174,7 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_1 {
 				continue;
 
 			//Format the author's name based on cache or call API if necessary
-			$author = $this->build_author_name( $tweet->from_user );
+			$author = $this->build_author_name( $tweet->from_user, true );
 
 			//prepare comment array
 			$commentdata = array(
@@ -194,7 +194,7 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_1 {
 				$comment_id = $this->new_comment( $commentdata );
 
 			//Prime profile image cache
-			$this->calls->get_profile_image( $tweet->from_user );
+			$this->calls->get_profile_image( $tweet->from_user, true );
 
 			$this->api->do_action( 'insert_mention', $comment_id, $commentdata );
 
@@ -385,10 +385,10 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_1 {
 	 * @param string $twitterID twitter handle of user
 	 * @returns string the formatted name
 	 */
-	function build_author_name( $twitterID ) {
+	function build_author_name( $twitterID, $force = false ) {
 
 		//get the cached real name or query the API
-		$real_name = $this->calls->get_author_name( $twitterID );
+		$real_name = $this->calls->get_author_name( $twitterID, $force );
 
 		//If we don't have a real name, just use their twitter handle
 		if ( !$real_name || substr( $real_name, 0, 1 ) == '@' )
