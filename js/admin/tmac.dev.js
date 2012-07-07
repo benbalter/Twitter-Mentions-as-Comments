@@ -9,7 +9,8 @@ jQuery(document).ready(function($){
    			else 
    				$('#cron-details').slideUp();
 		});	
-		if ( tmac.hide_manual_cron_details ) {
+		
+		if ( twitter_mentions_as_comments.hide_manual_cron_details ) {
     		$('#cron-details').hide();
     	}
 		

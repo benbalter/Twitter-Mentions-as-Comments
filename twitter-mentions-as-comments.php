@@ -3,7 +3,7 @@
 Plugin Name: Twitter Mentions as Comments
 Plugin URI: http://ben.balter.com/2010/11/29/twitter-mentions-as-comments/
 Description: Queries the Twitter API on a regular basis for tweets about your posts.
-Version: 1.5.1
+Version: 1.5.2
 Author: Benjamin J. Balter
 Author URI: http://ben.balter.com
 License: GPL2
@@ -31,12 +31,13 @@ License: GPL2
  *
  *  @copyright 2011-2012
  *  @license GPL v3
- *  @version 1.5.1
+ *  @version 1.5.2
  *  @package Twitter_Mentions_As_Comments
  *  @author Benjamin J. Balter <ben@balter.com>
  */
 
 require_once dirname( __FILE__ ) . '/includes/class.plugin-boilerplate.php';
+require_once dirname( __FILE__ ) . '/includes/tlc-transients/tlc-transients.php';
 
 class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_1 {
 
@@ -47,7 +48,7 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_1 {
 	public $slug_     = 'twitter_mentions_as_comments';
 	public $prefix    = 'tmac_';
 	public $directory = null;
-	public $version   = '1.5.1';
+	public $version   = '1.5.2';
 
 	/**
 	 * Registers hooks and filters
@@ -63,13 +64,17 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_1 {
 
 		//Kill cron on deactivation
 		register_deactivation_hook( __FILE__, array( &$this, 'deactivation' ) );
-
+		
+		//schedule cron
+		add_action( 'admin_init', array( &$this, 'maybe_schedule_cron' ) );
+		
 		//float bug fix
 		add_filter( 'tmac_lastID', array( &$this, 'lastID_float_fix'), 10, 2 );
 
 		//avatars
 		add_filter( 'get_avatar', array( &$this, 'filter_avatar' ), 10, 2  );
-
+		
+		//init options
 		add_action( 'tmac_options_init', array( &$this, 'options_init' ) );
 
 	}
@@ -80,7 +85,8 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_1 {
 	 */
 	function options_init() {
 
-		$this->options->defaults = array(  'comment_type' => '',
+		$this->options->defaults = array(  
+			'comment_type'    => '',
 			'posts_per_check' => -1,
 			'hide-donate'     => false,
 			'api_call_limit'  => 150,
@@ -164,13 +170,11 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_1 {
 		foreach ( $mentions->results as $tweet ) {
 
 			//If they exclude RTs, look for "RT" and skip if needed
-			if ( $this->options->RTs ) {
-				if ( substr( $tweet->text, 0, 2 ) == 'RT' )
-					continue;
-			}
+			if ( $this->options->RTs && substr( $tweet->text, 0, 2 ) == 'RT' )
+				continue;
 
 			//Format the author's name based on cache or call API if necessary
-			$author = $this->build_author_name( $tweet->from_user );
+			$author = $this->build_author_name( $tweet->from_user, true );
 
 			//prepare comment array
 			$commentdata = array(
@@ -179,7 +183,7 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_1 {
 				'comment_author_email' => $tweet->from_user . '@twitter.com',
 				'comment_author_url'   => 'http://twitter.com/' . $tweet->from_user . '/status/' . $tweet->id_str . '/',
 				'comment_content'      => $tweet->text,
-				'comment_date_gmt'     => date('Y-m-d H:i:s', strtotime($tweet->created_at) ),
+				'comment_date_gmt'     => date('Y-m-d H:i:s', strtotime( $tweet->created_at ) ),
 				'comment_type'         => $this->options->comment_type
 			);
 
@@ -189,15 +193,15 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_1 {
 			if ( !empty( $commentdata ) )
 				$comment_id = $this->new_comment( $commentdata );
 
-			//Cache the user's profile image
-			add_comment_meta($comment_id, 'tmac_image', $tweet->profile_image_url, true);
+			//Prime profile image cache
+			$this->calls->get_profile_image( $tweet->from_user, true );
 
 			$this->api->do_action( 'insert_mention', $comment_id, $commentdata );
 
 		}
 
 		//If we found a mention, update the last_Id post meta
-		update_post_meta($postID, 'tmac_last_id', $mentions->max_id_str );
+		update_post_meta( $postID, 'tmac_last_id', $mentions->max_id_str );
 
 		//return number of mentions found
 		return sizeof( $mentions->results );
@@ -217,7 +221,7 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_1 {
 		$this->calls->count = $this->options->api_call_counter;
 
 		//Get all posts
-		$posts = get_posts('numberposts=' . $this->options->posts_per_check );
+		$posts = get_posts( 'numberposts=' . $this->options->posts_per_check );
 		$posts = $this->api->apply_filters( 'mentions_check_posts', $posts );
 
 		//Loop through each post and check for new mentions
@@ -259,17 +263,35 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_1 {
 	 */
 	function upgrade( $from, $to ) {
 
-	if ( !wp_next_scheduled( 'tmac_hourly_check' ) )
-		wp_schedule_event( time(), 'hourly', 'tmac_hourly_check' );
-
 		//change option name pre-1.5
 		if ( $from < '1.5' ) {
 			$this->options->set_options ( get_option( 'tmac_options' ) );
 			delete_option( 'tmac_options' );
 		}
+		
+		//remove tmac image cache from comment_meta table
+		if ( $from < '1.5.2' ) {
+			global $wpdb;
+			$wpdb->query( "DELETE FROM $wpdb->commentmeta WHERE meta_key LIKE 'tmac_image'" );
+			
+		}
 
 	}
 
+	/**
+	 * Check on admin_init to ensure our event is scheduled, if not, schedule
+	 * Doing on Upgrade requires that we bump versions (so would not work if deactivated then reactivated)
+	 * Doing on activation doesn't fire on upgrade.
+	 * Hence, we check on admin init
+	 */
+	function maybe_schedule_cron() {
+	
+		if ( wp_next_scheduled( 'tmac_hourly_check' ) )
+			return;
+			
+		wp_schedule_event( time(), 'hourly', 'tmac_hourly_check' );
+	
+	}
 
 	/**
 	 * Callback to remove cron job
@@ -363,13 +385,13 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_1 {
 	 * @param string $twitterID twitter handle of user
 	 * @returns string the formatted name
 	 */
-	function build_author_name( $twitterID ) {
+	function build_author_name( $twitterID, $force = false ) {
 
 		//get the cached real name or query the API
-		$real_name = $this->calls->get_author_name( $twitterID );
+		$real_name = $this->calls->get_author_name( $twitterID, $force );
 
 		//If we don't have a real name, just use their twitter handle
-		if ( !$real_name )
+		if ( !$real_name || substr( $real_name, 0, 1 ) == '@' )
 			$name = '@' . $twitterID;
 
 		//if we have their real name, build a pretty name
@@ -396,8 +418,14 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_1 {
 		if ( !isset( $data->comment_agent ) || $data->comment_agent != $this->name )
 			return $avatar;
 
+		$author = str_replace( '@twitter.com', '', $data->comment_author_email );
+
 		//get the url of the image
-		$url = $this->calls->get_profile_image ( substr( $data->comment_author, 1 ), $data->comment_ID);
+		$url = $this->calls->get_profile_image ( $author );
+
+		//call failed
+		if ( !$url )
+			return $avatar;
 
 		//replace the twitter image with the default avatar and return
 		return preg_replace("/http:\/\/([^']*)/", $url, $avatar);
