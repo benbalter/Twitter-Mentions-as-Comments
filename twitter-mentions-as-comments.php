@@ -272,7 +272,7 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_1 {
 		//remove tmac image cache from comment_meta table
 		if ( $from < '1.5.2' ) {
 			global $wpdb;
-			$wpdb->query( "DELETE FROM $wpdb->comment_meta WHERE meta_key LIKE 'tmac_image'" );
+			$wpdb->query( "DELETE FROM $wpdb->commentmeta WHERE meta_key LIKE 'tmac_image'" );
 			
 		}
 
