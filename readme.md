@@ -2,9 +2,9 @@
 **Contributors:** benbalter  
 **Donate link:** http://ben.balter.com/donate/?utm_source=wp&utm_medium=org_plugin_page&utm_campaign=tmac  
 **Tags:** comments, twitter, mentions, social, social media  
-**Requires at least:** 3.0  
-**Tested up to:** 3.2  
-**Stable tag:** 1.5.1
+**Requires at least:** 3.2  
+**Tested up to:** 3.5  
+**Stable tag:** 1.5.2
 
 Twitter Mentions as Comments scours Twitter for people talking about your site & silently inserts their Tweets alongside your existing comments.
 
