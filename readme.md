@@ -64,7 +64,7 @@ Please see (and feel free to contribute to) the [Frequently Asked Questions Wiki
 
 ### 1.5.3 ###
 * Plugin documentation now maintained in a [collaboratively edited wiki](https://github.com/benbalter/Twitter-Mentions-as-Comments/wiki/). Feel free to contribute!
-* Created [listserv to provide a discussion forum](https://groups.google.com/forum/#!forum/Twitter-Mentions-as-Comments) for users of and contributors, as well as general annoucements. Feel free to join!
+* Created [listserv to provide a discussion forum](https://groups.google.com/forum/#!forum/Twitter-Mentions-as-Comments) for users and contributors, as well as general annoucements. Feel free to join!
 * Fixed bug in deploy script which failed to included required library (TLC-Transients) resulting in fatal error upon upgrade or activation
 
 ### 1.5.2 ###
