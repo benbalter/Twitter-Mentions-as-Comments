@@ -12,18 +12,18 @@ class Twitter_Mentions_As_Comments_Admin {
 	 * Register Hooks with WordPress API
 	 * @param class $parent (reference) the parent class
 	 */
-	function __construct( &$parent ) {
+	function __construct( $parent ) {
 
 		if ( !is_admin() )
 			return;
 
-		$this->parent = &$parent;
+		$this->parent = $parent;
 
-		add_action( 'admin_menu', array( &$this, 'options_menu_init' ) );
+		add_action( 'admin_menu', array( $this, 'options_menu_init' ) );
 
-		add_action( 'admin_init', array( &$this, 'enqueue_init' ) );
+		add_action( 'admin_init', array( $this, 'enqueue_init' ) );
 
-		add_filter( 'tmac_options_validate', array( &$this, 'options_validate' ) );
+		add_filter( 'tmac_options_validate', array( $this, 'options_validate' ) );
 
 	}
 
@@ -43,7 +43,7 @@ class Twitter_Mentions_As_Comments_Admin {
 	function options() {
 
 		$mentions = false;
-		$options = &$this->parent->options;
+		$options = $this->parent->options;
 
 		if ( isset( $_GET['force_refresh'] ) && $_GET['force_refresh'] == true )
 			$mentions = $this->parent->mentions_check();
@@ -75,7 +75,7 @@ class Twitter_Mentions_As_Comments_Admin {
 	 * Register menu
 	 */
 	function options_menu_init() {
-		add_options_page( 'Twitter Mentions as Comments Options', 'Twitter -> Comments', 'manage_options', 'tmac_options', array( &$this, 'options' ) );
+		add_options_page( 'Twitter Mentions as Comments Options', 'Twitter -> Comments', 'manage_options', 'tmac_options', array( $this, 'options' ) );
 	}
 
 
