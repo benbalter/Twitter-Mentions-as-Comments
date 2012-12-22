@@ -56,26 +56,26 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_1 {
 	 */
 	function __construct() {
 
-		self::$instance = &$this;
+		self::$instance = $this;
 		$this->directory = dirname( __FILE__ );
-		parent::__construct( &$this );
+		parent::__construct( $this );
 
-		add_action('tmac_hourly_check', array( &$this, 'hourly' ) );
+		add_action('tmac_hourly_check', array( $this, 'hourly' ) );
 
 		//Kill cron on deactivation
-		register_deactivation_hook( __FILE__, array( &$this, 'deactivation' ) );
+		register_deactivation_hook( __FILE__, array( $this, 'deactivation' ) );
 		
 		//schedule cron
-		add_action( 'admin_init', array( &$this, 'maybe_schedule_cron' ) );
+		add_action( 'admin_init', array( $this, 'maybe_schedule_cron' ) );
 		
 		//float bug fix
-		add_filter( 'tmac_lastID', array( &$this, 'lastID_float_fix'), 10, 2 );
+		add_filter( 'tmac_lastID', array( $this, 'lastID_float_fix'), 10, 2 );
 
 		//avatars
-		add_filter( 'get_avatar', array( &$this, 'filter_avatar' ), 10, 2  );
+		add_filter( 'get_avatar', array( $this, 'filter_avatar' ), 10, 2  );
 		
 		//init options
-		add_action( 'tmac_options_init', array( &$this, 'options_init' ) );
+		add_action( 'tmac_options_init', array( $this, 'options_init' ) );
 
 	}
 
