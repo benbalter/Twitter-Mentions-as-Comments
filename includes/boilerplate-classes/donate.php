@@ -16,17 +16,17 @@ class Plugin_Boilerplate_Donate_v_1 {
 	 * Register with WordPress API on init
 	 * @param class $parent (reference) the parent class
 	 */
-	function __construct( &$parent ) {
+	function __construct( $parent ) {
 
-		$this->parent = &$parent;
+		$this->parent = $parent;
 
 		//add tracking codes
 		$this->link = add_query_arg( 'utm_source', 'wp', $this->link );
 		$this->link = add_query_arg( 'utm_medium', 'options', $this->link );
 		$this->link = add_query_arg( 'utm_campaign', $this->parent->slug_, $this->link );
 
-		add_action( 'wp_ajax_' . $this->parent->slug_ . '_hide_donate', array( &$this, 'hide') );
-		add_action( 'admin_init', array( &$this, 'store_activation' ) );
+		add_action( 'wp_ajax_' . $this->parent->slug_ . '_hide_donate', array( $this, 'hide') );
+		add_action( 'admin_init', array( $this, 'store_activation' ) );
 
 	}
 
