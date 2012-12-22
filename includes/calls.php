@@ -14,9 +14,9 @@ class Twitter_Mentions_As_Comments_Calls {
 	 * Store parent on construct
 	 * @param class $parent (reference) the parent class
 	 */
-	function __construct( &$parent ) {
+	function __construct( $parent ) {
 
-		$this->parent = &$parent;
+		$this->parent = $parent;
 
 	}
 
@@ -122,7 +122,7 @@ class Twitter_Mentions_As_Comments_Calls {
 		$twitterID = strtolower( $twitterID );
 		
 		$trans = tlc_transient( 'tmac_user_' . $twitterID  )
-		    ->updates_with( array( &$this, 'get_user_object_callback' ), array( $twitterID ) )
+		    ->updates_with( array( $this, 'get_user_object_callback' ), array( $twitterID ) )
 		    ->expires_in( $this->user_ttl );
 		    
 		if ( !$force )
