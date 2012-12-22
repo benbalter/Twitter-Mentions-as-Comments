@@ -17,9 +17,9 @@ class Plugin_Boilerplate_Template_v_1 {
 	 * Store parent and init template directory
 	 * @param class $parent (reference) the parent class
 	 */
-	function __construct( &$parent ) {
+	function __construct( $parent ) {
 
-		$this->parent = &$parent;
+		$this->parent = $parent;
 
 	}
 
