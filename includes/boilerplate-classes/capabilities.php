@@ -33,11 +33,11 @@ class Plugin_Boilerplate_Capabilities_v_1 {
 	 * Register with WordPress API
 	 * @param class $parent the parent class
 	 */
-	function __construct( &$parent ) {
+	function __construct( $parent ) {
 
-		$this->parent = &$parent;
+		$this->parent = $parent;
 
-		add_action( 'init', array( &$this, 'add_caps' ) );
+		add_action( 'init', array( $this, 'add_caps' ) );
 
 	}
 
