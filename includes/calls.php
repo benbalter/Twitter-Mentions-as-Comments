@@ -14,9 +14,9 @@ class Twitter_Mentions_As_Comments_Calls {
 	 * Store parent on construct
 	 * @param class $parent (reference) the parent class
 	 */
-	function __construct( $parent ) {
+	function __construct( &$parent ) {
 
-		$this->parent = $parent;
+		$this->parent = &$parent;
 
 	}
 
