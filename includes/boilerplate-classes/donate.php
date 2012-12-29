@@ -16,9 +16,9 @@ class Plugin_Boilerplate_Donate_v_1 {
 	 * Register with WordPress API on init
 	 * @param class $parent (reference) the parent class
 	 */
-	function __construct( &$parent ) {
+	function __construct( $parent ) {
 
-		$this->parent = &$parent;
+		$this->parent = $parent;
 
 		//add tracking codes
 		$this->link = add_query_arg( 'utm_source', 'wp', $this->link );
