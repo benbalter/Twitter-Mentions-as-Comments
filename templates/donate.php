@@ -5,6 +5,7 @@
  * @package Plugin_Boilerplate
  */
 ?>
+
 <?php if ( current_user_can( 'manage_options' ) 
 	&& !$this->parent->options->get_user_option( 'hide-donate' ) 
 	&& !$this->parent->donate->delay_plea() ) : ?>
