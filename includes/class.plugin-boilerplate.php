@@ -36,7 +36,7 @@ if ( !class_exists( 'Plugin_Boilerplate_v_1' ) ):
 	public $prefix              = 'plugin_boilerplate_'; //prefix to append to all options, API calls, etc. w/ trailing underscore
 	public $directory           = null;
 	public $version             = '1.0';
-	public $boilerplate_version = '1.1';
+	public $boilerplate_version = '1';
 	public $min_wp              = '3.3';
 	public $classes             = array();
 
