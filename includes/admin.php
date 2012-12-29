@@ -12,7 +12,7 @@ class Twitter_Mentions_As_Comments_Admin {
 	 * Register Hooks with WordPress API
 	 * @param class $parent (reference) the parent class
 	 */
-	function __construct( $parent ) {
+	function __construct( &$parent ) {
 
 		if ( !is_admin() )
 			return;
