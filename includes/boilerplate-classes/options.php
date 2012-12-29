@@ -18,9 +18,9 @@ class Plugin_Boilerplate_Options_v_1 {
 	 * Stores parent class as static
 	 * @param class $parent (reference) the parent class
 	 */
-	function __construct( &$parent ) {
+	function __construct( $parent ) {
 
-		$this->parent = &$parent;
+		$this->parent = $parent;
 
 		add_action( 'admin_init', array( $this, 'options_init' ) );
 		add_action( $this->parent->prefix . 'options', array( $this, 'default_options_filter' ), 20 );
