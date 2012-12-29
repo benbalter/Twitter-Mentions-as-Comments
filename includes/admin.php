@@ -17,7 +17,7 @@ class Twitter_Mentions_As_Comments_Admin {
 		if ( !is_admin() )
 			return;
 
-		$this->parent = $parent;
+		$this->parent = &$parent;
 
 		add_action( 'admin_menu', array( $this, 'options_menu_init' ) );
 
