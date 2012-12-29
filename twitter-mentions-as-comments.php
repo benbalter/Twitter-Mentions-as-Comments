@@ -56,7 +56,7 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_1 {
 	 */
 	function __construct() {
 
-		self::$instance = $this;
+		self::$instance = &$this;
 		$this->directory = dirname( __FILE__ );
 		parent::__construct( $this );
 
