@@ -16,9 +16,9 @@ class Plugin_Boilerplate_Debug_v_1 {
 	 * Register with WordPress API on construct
 	 * @param class $parent the parent class
 	 */
-	function __construct( &$parent ) {
+	function __construct( $parent ) {
 
-		$this->parent = &$parent;
+		$this->parent = $parent;
 
 		add_action( 'init', array( $this, 'init' ), 5 );
 
