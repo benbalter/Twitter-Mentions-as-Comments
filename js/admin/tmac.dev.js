@@ -9,7 +9,6 @@
         return;
       }
       jQuery("#cron-details").siblings("input").click(this.toggleCron);
-      jQuery("#hide-donate").click(this.hideDonate);
       if (twitter_mentions_as_comments.hide_manual_cron_details) {
         jQuery("#cron-details").hide();
       }
@@ -21,17 +20,6 @@
       } else {
         return jQuery("#cron-details").slideUp();
       }
-    };
-
-    TMAC.prototype.hideDonate = function() {
-      jQuery.ajax({
-        url: ajaxurl + "?action=tmac_hide_donate&_ajax_nonce-tmac-hide-donate=" + jQuery("#_ajax_nonce-tmac-hide-donate").val(),
-        success: function() {
-          return jQuery("#donate").fadeOut();
-        }
-      });
-      event.preventDefault();
-      return false;
     };
 
     return TMAC;
