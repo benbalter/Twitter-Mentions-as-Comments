@@ -14,9 +14,9 @@ class Plugin_Boilerplate_Cache_v_1 {
 	 * Stores parent class
 	 * @param class $parent the parent class
 	 */
-	function __construct( &$parent ) {
+	function __construct( $parent ) {
 
-		$this->parent = &$parent;
+		$this->parent = $parent;
 
 	}
 
