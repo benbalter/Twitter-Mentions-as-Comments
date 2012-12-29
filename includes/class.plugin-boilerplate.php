@@ -36,8 +36,8 @@ if ( !class_exists( 'Plugin_Boilerplate_v_1' ) ):
 	public $prefix              = 'plugin_boilerplate_'; //prefix to append to all options, API calls, etc. w/ trailing underscore
 	public $directory           = null;
 	public $version             = '1.0';
-	public $boilerplate_version = '1';
-	public $min_wp              = '3.2';
+	public $boilerplate_version = '1.1';
+	public $min_wp              = '3.3';
 	public $classes             = array();
 
 	/**
@@ -47,7 +47,7 @@ if ( !class_exists( 'Plugin_Boilerplate_v_1' ) ):
 	function __construct( &$child ) {
 
 		//don't let this fire twice
-		if ( get_class( &$this )  == 'Plugin_Boilerplate' )
+		if ( get_class( $this )  == 'Plugin_Boilerplate' )
 			return;
 
 		//verify minimum WP version, and shutdown if insufficient
@@ -55,13 +55,13 @@ if ( !class_exists( 'Plugin_Boilerplate_v_1' ) ):
 			return false;
 
 		//upgrade db
-		add_action( 'admin_init', array( &$this, '_upgrade_check' ) );
+		add_action( 'admin_init', array( $this, '_upgrade_check' ) );
 
 		//i18n
-		add_action( 'init', array( &$this, '_i18n' ) );
+		add_action( 'init', array( $this, '_i18n' ) );
 
 		//load subclasses on init, allowing other plugins or self to override
-		add_action( 'plugins_loaded', array( &$this, '_init' ), 5 );
+		add_action( 'plugins_loaded', array( $this, '_init' ), 5 );
 
 	}
 
@@ -112,7 +112,7 @@ if ( !class_exists( 'Plugin_Boilerplate_v_1' ) ):
 				continue;
 			}
 
-			$this->{$include->object_name} = new $include->class( &$this );
+			$this->{$include->object_name} = new $include->class( $this );
 			$this->classes[ $include->object_name ] = $include->class;
 
 		}
@@ -167,7 +167,7 @@ if ( !class_exists( 'Plugin_Boilerplate_v_1' ) ):
 		if ( get_bloginfo( 'version' ) >= $this->min_wp )
 			return true;
 
-		add_action( 'admin_notices', array( &$this, 'update_wp' ) );
+		add_action( 'admin_notices', array( $this, 'update_wp' ) );
 		do_action( "{$this->prefix}_wp_outdated" );
 
 		return false;
@@ -209,7 +209,7 @@ if ( !class_exists( 'Plugin_Boilerplate_v_1' ) ):
 
 		//base, either Plugin class or Plugin_Boilerplate
 		$class->native = ( dirname( $file ) == dirname( __FILE__ ) . '/boilerplate-classes' );
-		$class->base = ( $class->native ) ? 'Plugin_Boilerplate' : get_class( &$this );
+		$class->base = ( $class->native ) ? 'Plugin_Boilerplate' : get_class( $this );
 		$class->class = $class->base . '_' . $class->name;
 
 		//if this is a PB native class, append a version # to prevent collision

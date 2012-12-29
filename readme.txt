@@ -63,6 +63,9 @@ the directory of the stable readme.txt, so in this case, `/tags/4.3/screenshot-1
 
 == Changelog ==
 
+= 1.1 =
+* Remove calltime pass by reference to ensure PHP 5.4 compatability
+
 = 1.0 =
 * A change since the previous version.
 * Another change.
