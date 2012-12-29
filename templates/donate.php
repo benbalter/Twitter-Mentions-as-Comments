@@ -5,14 +5,16 @@
  * @package Plugin_Boilerplate
  */
 ?>
-<?php if ( current_user_can( 'manage_options' ) && !$this->parent->options->get_user_option( 'hide-donate' ) ) : ?>
+<?php if ( current_user_can( 'manage_options' ) 
+	&& !$this->parent->options->get_user_option( 'hide-donate' ) 
+	&& !$this->parent->donate->delay_plea() ) : ?>
 <tr valign="top" id="donate">
 	<th scope="row">
 		<?php _e( 'Support', 'twitter-mentions-as-comments' ); ?>
 	</th>
 	<td>
-		<em><?php echo sprintf( __( 'Enjoy using %1$s? Please consider <a href="%2$s">making a small donation</a> to support the software\'s continued development.', 'twitter-mentions-as-comments' ), $this->parent->name, $this->parent->donate->link ); ?></em>
-		<span style="font-size: 10px;">(<a href="#" id="hide-donate"><?php _e( 'hide this message', 'twitter-mentions-as-comments' ); ?></a>)</span>
+		<em><?php echo sprintf( __( 'Enjoy using %1$s? Please consider <a href="%2$s">making a small donation</a> to support the software\'s continued development.' ), $this->parent->name, $this->parent->donate->link ); ?></em>
+		<span style="font-size: 10px;">(<a href="#" id="hide-donate"><?php _e( 'hide this message' ); ?></a>)</span>
 		<?php wp_nonce_field( $this->parent->slug_ . '_hide_donate' , '_ajax_nonce-' . $this->parent->slug . '-hide-donate' ); ?>
 		<?php $data = array( 'action' => $this->parent->slug_ . '_hide_donate', 'nonce' => '_ajax_nonce-' . $this->parent->slug . '-hide-donate' ); ?>
 		<script>

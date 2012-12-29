@@ -20,7 +20,7 @@ class Plugin_Boilerplate_Debug_v_1 {
 
 		$this->parent = &$parent;
 
-		add_action( 'init', array( &$this, 'init' ), 5 );
+		add_action( 'init', array( $this, 'init' ), 5 );
 
 	}
 
@@ -33,8 +33,8 @@ class Plugin_Boilerplate_Debug_v_1 {
 		if ( !current_user_can( 'manage_options' ) || !WP_DEBUG )
 			return;
 
-		add_filter('debug_bar_panels', array( &$this, 'init_panel' ) );
-		add_filter('debug_bar_panels',  array( &$this, 'register_panel' ), 20 );
+		add_filter('debug_bar_panels', array( $this, 'init_panel' ) );
+		add_filter('debug_bar_panels',  array( $this, 'register_panel' ), 20 );
 
 	}
 
@@ -93,7 +93,7 @@ class Plugin_Boilerplate_Debug_v_1 {
 	function register_panel( $panels ) {
 		$slug = $this->parent->slug_;
 		$class = "{$slug}_Debug_Panel";
-		$panels[] = new $class( $this->parent->name . ' Debug', &$this );
+		$panels[] = new $class( $this->parent->name . ' Debug', $this );
 
 		return $panels;
 
