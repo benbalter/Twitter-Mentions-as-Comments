@@ -44,7 +44,7 @@ if ( !class_exists( 'Plugin_Boilerplate_v_1' ) ):
 	 * Register with WordPress API on Construct
 	 * @param class $child (reference) the child (extended) class
 	 */
-	function __construct( &$child ) {
+	function __construct( $child ) {
 
 		//don't let this fire twice
 		if ( get_class( $this )  == 'Plugin_Boilerplate' )
