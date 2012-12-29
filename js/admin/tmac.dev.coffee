@@ -10,7 +10,6 @@ class TMAC
       jQuery("#cron-details").hide()
 
   toggleCron: -> 
-    console.log jQuery(this).val()
     if jQuery(this).val() is "1"
       jQuery("#cron-details").slideDown()
     else

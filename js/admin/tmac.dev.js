@@ -16,7 +16,6 @@
     }
 
     TMAC.prototype.toggleCron = function() {
-      console.log(jQuery(this).val());
       if (jQuery(this).val() === "1") {
         return jQuery("#cron-details").slideDown();
       } else {
