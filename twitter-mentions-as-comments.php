@@ -14,7 +14,7 @@ License: GPL2v3 or later
  *  Twitter Mentions as Comments scours Twitter for people talking about your site
  *  & silently inserts their Tweets alongside your existing comments.
  *
- *  Copyright (C) 2011-2012  Benjamin J. Balter  ( ben@balter.com -- http://ben.balter.com )
+ *  Copyright (C) 2011-2013  Benjamin J. Balter  ( ben@balter.com -- http://ben.balter.com )
  *
  *	This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -29,17 +29,17 @@ License: GPL2v3 or later
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  @copyright 2011-2012
+ *  @copyright 2011-2013
  *  @license GPL v3 or later
  *  @version 1.5.4
  *  @package Twitter_Mentions_As_Comments
  *  @author Benjamin J. Balter <ben@balter.com>
  */
 
-require_once dirname( __FILE__ ) . '/includes/class.plugin-boilerplate.php';
+require_once dirname( __FILE__ ) . '/includes/boilerplate/class.plugin-boilerplate.php';
 require_once dirname( __FILE__ ) . '/includes/tlc-transients/tlc-transients.php';
 
-class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_1 {
+class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_2 {
 
 	//plugin boilerplate settings
 	static $instance;
