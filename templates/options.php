@@ -6,6 +6,19 @@
 	<?php if ( isset( $_GET['force_refresh'] ) ) $this->parent->template->load( 'forced-refresh', compact( 'mentions' ) ); ?>
 		<table class="form-table">
 			<tr valign="top">
+				<th scope="row"><label for="<?php echo  $this->parent->slug_; ?>[api_key]"><?php _e( 'Twitter Consumer Key', 'twitter-mentions-as-comments' ); ?></label></th>
+				<td>
+					<input type="text" name="<?php echo $this->parent->slug_ ?>[api_key]" id="<?php echo $this->parent->slug_ ?>[api_key]" value="<?php echo $this->parent->options->api_key ?>" size="30"><br />
+					<span class="description"><?php _e( 'Your Twitter Consumer Key (you can create one by registering a new app at <a href="https://dev.twitter.com/apps." target="_new">dev.twitter.com/apps</a>)', 'twitter-mentions-as-comments' ); ?></span>
+				</td>
+			</tr>	
+				<th scope="row"><label for="<?php echo  $this->parent->slug_; ?>[api_secret]"><?php _e( 'Twitter Consumer Secret', 'twitter-mentions-as-comments' ); ?></label></th>
+				<td>
+					<input type="text" name="<?php echo $this->parent->slug_ ?>[api_secret]" id="<?php echo $this->parent->slug_ ?>[api_secret]" value="<?php echo $this->parent->options->api_secret ?>" size="50"><br />
+					<span class="description"><?php _e( 'Your Twitter Consumer Secret.', 'twitter-mentions-as-comments' ); ?></span>
+				</td>
+			</tr>
+			<tr valign="top">
 				<th scope="row"><label for="<?php echo  $this->parent->slug_; ?>[RTs]"><?php _e( 'Exclude ReTweets?', 'twitter-mentions-as-comments' ); ?></label></th>
 				<td>
 					<input name="<?php echo  $this->parent->slug_; ?>[RTs]" type="radio" id="<?php echo  $this->parent->slug_; ?>[RTs][0]" value="0" <?php if ( !$this->parent->options->RTs ) echo 'checked="checked"'; ?>/> <label for="<?php echo  $this->parent->slug_; ?>[RTs][0]"><?php _e( 'Include ReTweets', 'twitter-mentions-as-comments' ); ?></label><BR />
