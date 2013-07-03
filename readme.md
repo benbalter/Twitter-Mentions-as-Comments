@@ -48,12 +48,18 @@ You can see it in action on the [WP Resume Plugin page](http://ben.balter.com/20
 3. Search for Twitter Mentions as Comments
 4. Click "Install"
 5. Click "Activate Now"
+6. Visit https://dev.twitter.com/apps and create a new Twitter Application
+7. Copy your Consumer Key and Consumer Secret into the plugin settings (WP Dashboard -> Settings -> Twitter -> Comments)
+8. Click "Save Changes"
 
 ### Manual Install ###
 1. Download the plugin from the link in the top left corner
 2. Unzip the file, and upload the resulting "wp-document-revisions" folder to your "/wp-content/plugins directory" as "/wp-content/plugins/twitter-mentions-as-comments
 3. Log into your WordPress install as an administrator, and navigate to the plugins screen from the left-hand menu
 4. Activate Twitter Mentions as Comments
+6. Visit https://dev.twitter.com/apps and create a new Twitter Application
+7. Copy your Consumer Key and Consumer Secret into the plugin settings (WP Dashboard -> Settings -> Twitter -> Comments)
+8. Click "Save Changes"
 
 ## Frequently Asked Questions ##
 
