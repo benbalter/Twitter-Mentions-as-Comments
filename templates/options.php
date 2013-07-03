@@ -9,7 +9,7 @@
 				<th scope="row"><label for="<?php echo  $this->parent->slug_; ?>[api_key]"><?php _e( 'Twitter Consumer Key', 'twitter-mentions-as-comments' ); ?></label></th>
 				<td>
 					<input type="text" name="<?php echo $this->parent->slug_ ?>[api_key]" id="<?php echo $this->parent->slug_ ?>[api_key]" value="<?php echo $this->parent->options->api_key ?>" size="30"><br />
-					<span class="description"><?php _e( 'Your Twitter Consumer Key (you can create one by registering a new app at <a href="https://dev.twitter.com/apps." target="_new">dev.twitter.com/apps</a>)', 'twitter-mentions-as-comments' ); ?></span>
+					<span class="description"><?php _e( 'Your Twitter Consumer Key (you can create one by registering a new app at <a href="https://dev.twitter.com/apps" target="_new">dev.twitter.com/apps</a>)', 'twitter-mentions-as-comments' ); ?></span>
 				</td>
 			</tr>	
 				<th scope="row"><label for="<?php echo  $this->parent->slug_; ?>[api_secret]"><?php _e( 'Twitter Consumer Secret', 'twitter-mentions-as-comments' ); ?></label></th>
