@@ -228,13 +228,13 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_2 {
 		$mentions = $this->calls->get_mentions( $postID );
 
 		//if there are no tweets, update post meta to speed up subsequent calls and return
-		if ( empty( $mentions->results ) ) {
+		if ( empty( $mentions->statuses ) ) {
 			update_post_meta( $postID, 'tmac_last_id', $mentions->max_id_str );
 			return 0;
 		}
 
 		//loop through mentions
-		foreach ( $mentions->results as $tweet ) {
+		foreach ( $mentions->statuses as $tweet ) {
 
 			//If they exclude RTs, look for "RT" and skip if needed
 			if ( $this->options->RTs && substr( $tweet->text, 0, 2 ) == 'RT' )
@@ -271,7 +271,7 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_2 {
 		update_post_meta( $postID, 'tmac_last_id', $mentions->max_id_str );
 
 		//return number of mentions found
-		return sizeof( $mentions->results );
+		return sizeof( $mentions->statuses );
 	}
 
 
