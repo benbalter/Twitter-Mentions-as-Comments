@@ -229,7 +229,7 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_2 {
 
 		//if there are no tweets, update post meta to speed up subsequent calls and return
 		if ( empty( $mentions->statuses ) ) {
-			update_post_meta( $postID, 'tmac_last_id', $mentions->max_id_str );
+			update_post_meta( $postID, 'tmac_last_id', $mentions->search_metadata->max_id_str );
 			return 0;
 		}
 
