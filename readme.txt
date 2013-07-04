@@ -5,7 +5,7 @@ Donate link: http://ben.balter.com/donate/?utm_source=wp&utm_medium=org_plugin_p
 Tags: comments, twitter, mentions, social, social media  
 Requires at least: 3.3  
 Tested up to: 3.5  
-Stable tag: 1.5.4
+Stable tag: 1.5.5
 License: GPLv3 or Later
 
 Twitter Mentions as Comments scours Twitter for people talking about your site & silently inserts their Tweets alongside your existing comments.
@@ -66,6 +66,9 @@ You can see it in action on the [WP Resume Plugin page](http://ben.balter.com/20
 Please see (and feel free to contribute to) the [Frequently Asked Questions Wiki](https://github.com/benbalter/Twitter-Mentions-as-Comments/wiki/Frequently-Asked-Questions).
 
 == Changelog ==
+
+= 1.5.5 =
+* Support for Twitter API v1.1, mad, mad props to @raamdev and @s3u
 
 = 1.5.4 =
 * PHP 5.4 Compatibility, props @ceyson
