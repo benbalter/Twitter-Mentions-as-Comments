@@ -18,4 +18,4 @@ if ( !$tmac )
 	
 $mentions = $tmac->mentions_check();
 
-printf( _n( '%n mention found', '%n mentions found', $mentions, 'twitter-mentions-as-comments' ), $mentions );
+printf( _n( '%d mention found', '%d mentions found', $mentions, 'twitter-mentions-as-comments' ), $mentions );
