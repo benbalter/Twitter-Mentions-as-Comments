@@ -230,16 +230,17 @@ class Twitter_Mentions_As_Comments_Calls {
 	 * @parama int postID ID of current post
 	 * @since .1a
 	 * @todo multiple calls for multiple pages of results (e.g., > 100)
-	 * @param unknown $postID
+   * @param unknown $postID
+   * @param string $query keyword to search on twitter
 	 * @returns array array of tweets mentioning current page
 	 */
-	function get_mentions( $postID ) {
+	function get_mentions( $postID , $query ) {
 		
 		//Retrive last ID checked for on this post so we don't re-add a comment already added
 		$lastID = $this->parent->get_lastID( $postID );
 
 		//Build URL, verify that $lastID is a string and not scientific notation, see http://jetlogs.org/2008/02/05/php-problems-with-big-integers-and-scientific-notation/
-		$url = 'https://api.twitter.com/1.1/search/tweets.json?since_id=' . $lastID . '&q=' . urlencode( get_permalink( $postID ) );
+		$url = 'https://api.twitter.com/1.1/search/tweets.json?since_id=' . $lastID . '&q=' . urlencode( $query );
 		$url = $this->parent->api->apply_filters( 'query_url', $url, $postID );
 
 		$args = array(
