@@ -25,6 +25,22 @@
 					<input name="<?php echo  $this->parent->slug_; ?>[RTs]" type="radio" id="<?php echo  $this->parent->slug_; ?>[RTs][1]" value="1" <?php if ( $this->parent->options->RTs ) echo 'checked="checked"'; ?>/> <label for="<?php echo  $this->parent->slug_; ?>[RTs][1]"><?php _e( 'Exclude ReTweets', 'twitter-mentions-as-comments' ); ?></label><BR />
 					<span class="description"><?php _e( 'If "Exclude ReTweets" is selected, ReTweets (both old- and new-style) will be ignored.', 'twitter-mentions-as-comments' ); ?></span>
 				</td>
+      </tr>
+      <tr valign="top">
+				<th scope="row"><label for="<?php echo  $this->parent->slug_; ?>[use_custom_query]"><?php _e( 'Use custom query?', 'twitter-mentions-as-comments' ); ?></label></th>
+				<td>
+					<input name="<?php echo  $this->parent->slug_; ?>[use_custom_query]" type="radio" id="<?php echo  $this->parent->slug_; ?>[use_custom_query][0]" value="0" <?php if ( !$this->parent->options->use_custom_query ) echo 'checked="checked"'; ?>/> <label for="<?php echo  $this->parent->slug_; ?>[use_custom_query][0]"><?php _e( 'Custom query disable', 'twitter-mentions-as-comments' ); ?></label><BR />
+					<input name="<?php echo  $this->parent->slug_; ?>[use_custom_query]" type="radio" id="<?php echo  $this->parent->slug_; ?>[use_custom_query][1]" value="1" <?php if ( $this->parent->options->use_custom_query ) echo 'checked="checked"'; ?>/> <label for="<?php echo  $this->parent->slug_; ?>[use_custom_query][1]"><?php _e( 'Custom query enable', 'twitter-mentions-as-comments' ); ?></label><BR />
+					<span class="description"><?php _e( 'This parameter will use a query in meta post "tmac_custom_query" to fetch tweets. Can be any <a href="https://dev.twitter.com/rest/public/search">Query operators</a>. If meta post "tmac_custom_query" is not defined, the permalink is used.', 'twitter-mentions-as-comments' ); ?></span>
+				</td>
+			</tr>
+      <tr valign="top">
+				<th scope="row"><label for="<?php echo  $this->parent->slug_; ?>[check_only_custom]"><?php _e( 'Check only posts which have custom query?', 'twitter-mentions-as-comments' ); ?></label></th>
+				<td>
+					<input name="<?php echo  $this->parent->slug_; ?>[check_only_custom]" type="radio" id="<?php echo  $this->parent->slug_; ?>[check_only_custom][0]" value="0" <?php if ( !$this->parent->options->use_custom_query ) echo 'checked="checked"'; ?>/> <label for="<?php echo  $this->parent->slug_; ?>[check_only_custom][0]"><?php _e( 'Check only posts with custom query disable', 'twitter-mentions-as-comments' ); ?></label><BR />
+					<input name="<?php echo  $this->parent->slug_; ?>[check_only_custom]" type="radio" id="<?php echo  $this->parent->slug_; ?>[check_only_custom][1]" value="1" <?php if ( $this->parent->options->use_custom_query ) echo 'checked="checked"'; ?>/> <label for="<?php echo  $this->parent->slug_; ?>[check_only_custom][1]"><?php _e( 'Check only posts with custom query enable', 'twitter-mentions-as-comments' ); ?></label><BR />
+					<span class="description"><?php _e( 'This parameter override the number of posts to check, it will check only the post with "tmac_custom_query".', 'twitter-mentions-as-comments' ); ?></span>
+				</td>
 			</tr>
 			<tr valign="top">
 				<th scope="row"><label for="<?php echo  $this->parent->slug_; ?>[posts_per_check]"><?php _e( 'Number of Posts to Check', 'twitter-mentions-as-comments' ); ?></label></th>
@@ -32,7 +48,7 @@
 					<?php printf( __( 'Check the %s most recent posts for mentions', 'twitter-mentions-as-comments' ), '<input type="text" name="' . $this->parent->slug_ . '[posts_per_check]" id="' . $this->parent->slug_ . '[posts_per_check]" value="' . $this->parent->options->posts_per_check . '" size="2">' ) ; ?><br />
 					<span class="description"><?php _e( 'If set to "-1", will check all posts, if blank will check all posts on your site\'s front page.', 'twitter-mentions-as-comments' ); ?></span>
 				</td>
-			</tr>		
+			</tr>
 			<tr valign="top">
 				<th scope="row"><label for="<?php echo  $this->parent->slug_; ?>[comment_type]"><?php _e( 'Comment Type', 'twitter-mentions-as-comments' ); ?></label></th>
 				<td>

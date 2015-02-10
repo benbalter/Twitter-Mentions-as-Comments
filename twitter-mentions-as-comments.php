@@ -151,7 +151,7 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_2 {
 	 */
 	function options_init() {
 
-		$this->options->defaults = array(  
+		$this->options->defaults = array(
 			'comment_type'    => '',
 			'posts_per_check' => -1,
 			'hide-donate'     => false,
@@ -159,7 +159,9 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_2 {
 			'RTs'             => 1,
 			'api_key' => '',
 			'api_secret' => '',
-			'bearer_token' => '',
+      'bearer_token' => '',
+      'use_custom_query' => 0,
+      'check_only_custom' => 0
 		);
 
 	}
@@ -223,10 +225,13 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_2 {
 	 * @returns int number of tweets found
 	 */
 	function insert_metions( $postID ) {
-		
-		//Get array of mentions
-		$mentions = $this->calls->get_mentions( $postID );
 
+    //Get array of mentions
+    if( $this->options->use_custom_query && ($custom_query = $this->get_custom_query($postID)) && !empty($custom_query)){
+      $mentions = $this->calls->get_mentions( $postID , $custom_query );
+    }else{
+      $mentions = $this->calls->get_mentions( $postID , get_permalink( $postID ) );
+    }
 		//if there are no tweets, update post meta to speed up subsequent calls and return
 		if ( empty( $mentions->statuses ) ) {
 			update_post_meta( $postID, 'tmac_last_id', $mentions->search_metadata->max_id_str );
@@ -287,8 +292,15 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_2 {
 		//set API call counter
 		$this->calls->count = $this->options->api_call_counter;
 
-		//Get all posts
-		$posts = get_posts( 'numberposts=' . $this->options->posts_per_check );
+    if($this->options->check_only_custom){
+      $posts = get_posts( array(
+        'numberposts' => -1,
+        'meta_key' => 'tmac_custom_query'
+      ));
+    }else{
+      //Get all posts
+      $posts = get_posts( 'numberposts=' . $this->options->posts_per_check );
+    }
 		$posts = $this->api->apply_filters( 'mentions_check_posts', $posts );
 
 		//Loop through each post and check for new mentions
@@ -498,6 +510,21 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_2 {
 		return preg_replace("/http:\/\/([^']*)/", $url, $avatar);
 
 	}
+
+
+	/**
+	 * Retrieves the custom query for twitter search api
+	 * @since 1.5.7
+	 * @param int $postID ID of post
+	 * @returns string custom query for twitter search api
+	 */
+	function get_custom_query( $postID ) {
+
+		$custom_query = get_post_meta( $postID, 'tmac_custom_query', true );
+
+		return $this->api->apply_filters( 'tmac_custom_query', $custom_query, $postID );
+
+  }
 
 
 }
