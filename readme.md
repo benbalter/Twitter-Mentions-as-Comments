@@ -1,5 +1,7 @@
 # Twitter Mentions As Comments #
 
+:warning: **Please note: This project is no longer actively maintained. If you use the project and would like to adopt it, [please let me know](https://github.com/benbalter/Twitter-Mentions-as-Comments/issues/39)**. :warning:
+
 Contributors: benbalter  
 Donate link: http://ben.balter.com/donate/?utm_source=wp&utm_medium=org_plugin_page&utm_campaign=tmac  
 Tags: comments, twitter, mentions, social, social media  
