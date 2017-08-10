@@ -38,7 +38,7 @@ License: GPL2v3 or later
 
 require_once dirname( __FILE__ ) . '/includes/boilerplate/class.plugin-boilerplate.php';
 require_once dirname( __FILE__ ) . '/includes/tlc-transients/tlc-transients.php';
-require_once dirname( __FILE__ ) . '/includes/codebird.php';
+require_once dirname( __FILE__ ) . '/includes/codebird/codebird.php';
 
 class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_2 {
 
@@ -50,7 +50,7 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_2 {
 	public $prefix    = 'tmac_';
 	public $directory = null;
 	public $version   = '1.5.6';
-	
+
 	/**
 	 * Registers hooks and filters
 	 * @since 1.0
@@ -65,16 +65,16 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_2 {
 
 		//Kill cron on deactivation
 		register_deactivation_hook( __FILE__, array( $this, 'deactivation' ) );
-		
+
 		//schedule cron
 		add_action( 'admin_init', array( $this, 'maybe_schedule_cron' ) );
-		
+
 		//float bug fix
 		add_filter( 'tmac_lastID', array( $this, 'lastID_float_fix'), 10, 2 );
 
 		//avatars
 		add_filter( 'get_avatar', array( $this, 'filter_avatar' ), 10, 2  );
-		
+
 		//init options
 		add_action( 'tmac_options_init', array( $this, 'options_init' ), 10 );
 
@@ -85,9 +85,9 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_2 {
 
 	// Check settings to make sure key and secret are set
 	function check_settings() {
-		if (trim($this->options->api_key) == '' || trim($this->options->api_secret) == '') { 
+		if (trim($this->options->api_key) == '' || trim($this->options->api_secret) == '') {
 			$this->options->bearer_token = ''; // clear the bearer token if key or secret are reset
-			return false; 
+			return false;
 		}
 		return true;
 	}
@@ -96,7 +96,7 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_2 {
 	 * Generates and stores the Twitter bearer token if it hasn't already been generated
 	 */
 	function bearer_token_init() {
-		
+
 		// Check if Consumer Key or Consumer Secret have been set
 		if (!$this->check_settings()) {
 			add_action( 'admin_notices', array( $this, 'show_config_error_message' ) );
@@ -122,7 +122,7 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_2 {
 			}
 		}
 		else {
-			// We already have the bearer token generated and stored in the database, 
+			// We already have the bearer token generated and stored in the database,
 			// so lets use that to authenticate; there's no need to generate a new token
 			return;
 		}
@@ -136,7 +136,7 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_2 {
 		<div id="tmac-error" class="error fade"><p><strong>'.__('Twitter Mentions as Comments:').'</strong> '.sprintf(__('There was an error communicating with the Twitter API (error code %d). Please check the <a href="%s">plugin settings</a>.'), $this->httpstatus, 'options-general.php?page=tmac_options').'</p></div>
 		';
 	}
-	
+
 	/**
 	 * Show configuration error message
 	 */
@@ -145,7 +145,7 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_2 {
 		<div id="tmac-error" class="error fade"><p><strong>'.__('Twitter Mentions as Comments:').'</strong> '.sprintf(__('Twitter Consumer Key and Consumer Secret are missing. Please check the <a href="%s">plugin settings</a>.'), 'options-general.php?page=tmac_options').'</p></div>
 		';
 	}
-	
+
 	/**
 	 * Registers default options
 	 */
@@ -216,7 +216,7 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_2 {
 
 		return $lastID;
 	}
-	
+
 	/**
 	 * Inserts mentions into the comments table, queues and checks for spam as necessary
 	 * @params int postID ID of post to check for comments
@@ -347,12 +347,12 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_2 {
 			$this->options->set_options ( get_option( 'tmac_options' ) );
 			delete_option( 'tmac_options' );
 		}
-		
+
 		//remove tmac image cache from comment_meta table
 		if ( $from < '1.5.2' ) {
 			global $wpdb;
 			$wpdb->query( "DELETE FROM $wpdb->commentmeta WHERE meta_key LIKE 'tmac_image'" );
-			
+
 		}
 
 	}
@@ -364,12 +364,12 @@ class Twitter_Mentions_As_Comments extends Plugin_Boilerplate_v_2 {
 	 * Hence, we check on admin init
 	 */
 	function maybe_schedule_cron() {
-	
+
 		if ( wp_next_scheduled( 'tmac_hourly_check' ) )
 			return;
-			
+
 		wp_schedule_event( time(), 'hourly', 'tmac_hourly_check' );
-	
+
 	}
 
 	/**
